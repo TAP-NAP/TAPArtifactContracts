@@ -37,6 +37,17 @@ semantically validates a subset of those fields before retaining the rest as
 untyped data. This repository documents the complete producer contract; it does
 not claim the current verifier already enforces every field-level rule.
 
+## TAP Video `mebx` local-key mapping
+
+The QuickTime timed-metadata sample wrapper carries a track-local key ID that
+must resolve through the sample description's metadata key table to
+`mdta/com.tapnap.depth.klv`. The current TypeScript verifier observed during
+TAP-0095 validates the atom size and only requires this ID to be non-zero before
+reading the KLV bytes; its synthetic test happens to use `1`. It does not yet
+validate the key-table mapping or the other reserved ID. The container contract
+records the producer/QuickTime relationship; stricter runtime enforcement is a
+separate verifier change.
+
 ## No-depth photo binding reconstruction
 
 The producer emits an explicit unavailable `depthResource` when a Still or Live
@@ -48,6 +59,18 @@ required form. Complete content-digest comparison therefore needs a verifier
 follow-up before no-depth photos can be claimed cross-implementation conformant.
 This documentation records the producer/Product Contract behavior and does not
 change verifier code under the documentation-only task.
+
+## Composite TAP Video fixture manifest drift
+
+TAPCamDemo's repository-local
+`Docs/Fixtures/TAPVideoManifestV1GoldenVectors.json` is still loaded by a Swift
+decoder/KLV test. Its exact `depthFrame` bytes remain useful and are extracted
+as this repository's KLV/zstd golden vector. Its separate manifest object uses
+older optional/null and synchronization/software example values, so that object
+is not a normative current-v1 example. The current manifest contract and
+synthetic manifest example in this repository remain authoritative. Removing or
+rewriting the local composite fixture requires its executable test dependency
+to be updated separately; TAP-0095 does not promote the drift.
 
 ## Canonical JSON edge cases
 

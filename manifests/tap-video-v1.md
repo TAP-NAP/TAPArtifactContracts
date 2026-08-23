@@ -112,7 +112,28 @@ depth track.
 | `timeScale` | integer | required | ticks per second; `> 0` |
 | `nominalFrameRate` | number | optional | frames per second |
 | `frameCount` | integer | optional | captured RGB frame count |
-| `transform` | string | optional | Recorded display transform. Current forms include `rotation:N`, `rotation:N;mirrored`, and the current v1 vector's `rotation:N;not-mirrored`, where `N` is `0`, `90`, `180`, or `270` degrees clockwise. |
+| `transform` | string | optional | Recorded RGB display transform. Current producer forms are `rotation:N` and `rotation:N;mirrored`, where `N` is `0`, `90`, `180`, or `270` degrees clockwise. |
+
+`transform` applies to RGB presentation and the matching depth display grid.
+For a source grid with top-left-origin integer coordinates `(x, y)`, width `w`,
+and height `h`, the current mapping is:
+
+| Transform | Display orientation | Output size | Source to display coordinate |
+| --- | --- | --- | --- |
+| absent, `identity`, or `rotation:0` | up | `w × h` | `(x, y)` |
+| `rotation:0;mirrored` | up mirrored | `w × h` | `(w - 1 - x, y)` |
+| `rotation:90` | right | `h × w` | `(h - 1 - y, x)` |
+| `rotation:90;mirrored` | right mirrored | `h × w` | `(h - 1 - y, w - 1 - x)` |
+| `rotation:180` | down | `w × h` | `(w - 1 - x, h - 1 - y)` |
+| `rotation:180;mirrored` | down mirrored | `w × h` | `(x, h - 1 - y)` |
+| `rotation:270` | left | `h × w` | `(y, w - 1 - x)` |
+| `rotation:270;mirrored` | left mirrored | `h × w` | `(y, x)` |
+
+The literal `not-mirrored` belongs to the separate spatial-registration
+`recordedTransform` / `descriptor.connectionTransform` facts below; it is not
+a current `rgbTrack.transform` form. Readers MUST split transforms on `;` and
+compare complete components. Unknown or malformed components fail the semantic
+display check rather than silently changing the signed orientation.
 
 ### `audioTrack`
 

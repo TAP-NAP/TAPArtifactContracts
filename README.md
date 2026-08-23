@@ -3,11 +3,13 @@
 `TAPArtifactContracts` is the documentation-only source of truth for artifact
 formats shared by the TAPCam mobile producer and TAP artifact verifiers.
 
-It answers two questions:
+It answers three questions:
 
 1. What exact manifest, binding, proof, container, and package conventions does
    TAPCam produce?
-2. What exact conventions must a verifier parse, recompute, compare, reject, or
+2. How does the producer build the hash chain and generate its App Attest
+   assertion?
+3. What exact conventions must a verifier parse, recompute, compare, reject, or
    forward for server-side assertion verification?
 
 ## What lives here
@@ -18,7 +20,7 @@ It answers two questions:
 - Content-binding, signing-binding, proof-envelope, and proof-slot contracts
 - HEIC/JPEG XMP and MP4/KLV container conventions
 - `.tapnap` routing-sidecar conventions
-- Synthetic positive and negative JSON examples
+- Synthetic positive and negative JSON examples plus exact shared golden vectors
 - [Extraction source snapshot](SOURCE_SNAPSHOT.md)
 - [Known extraction divergences](KNOWN_DIVERGENCES.md)
 - [Producer and verifier adoption boundary](ADOPTION.md)
@@ -56,7 +58,10 @@ without silently redefining this contract.
 
 ## Current scope
 
-The initial extraction is tracked as `TAP-0094` in TAPCamDemo. It transcribes
-the current, distinct v1 families without changing their bytes or behavior.
-See [SOURCE_SNAPSHOT.md](SOURCE_SNAPSHOT.md) for the source revisions and known
+The initial extraction is tracked as `TAP-0094` in TAPCamDemo. `TAP-0095`
+extends the same documentation boundary with the explicit producer-signing,
+verifier-reconstruction, App Attest verification, hash-participation, and
+example-ownership rules, then removes duplicate source-repository prose. Both
+tasks preserve the current, distinct v1 bytes and behavior. See
+[SOURCE_SNAPSHOT.md](SOURCE_SNAPSHOT.md) for the source revisions and known
 working-tree qualifications used during extraction.

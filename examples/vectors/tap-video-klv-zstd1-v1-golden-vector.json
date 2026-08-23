@@ -1,0 +1,24 @@
+{
+  "format": "tap-video-klv-zstd1-golden-vector:v1",
+  "generator": {
+    "zstd": "1.5.7",
+    "zstdLevel": 1,
+    "contentChecksum": false
+  },
+  "depthFrame": {
+    "description": "Opaque packed Float16 bit-pattern bytes; decoders must preserve every bit. The V2 text inside the payload is test data, not a protocol family or version.",
+    "frameIndex": 17,
+    "pts": {
+      "value": 12345,
+      "timescale": 600
+    },
+    "calibrationIndex": 0,
+    "codec": "zstd1",
+    "uncompressedByteCount": 40,
+    "uncompressedSHA256": "7c7aac9b0b5a993e0b748bdb28e437ced469c7854e1d33ee5b18469e7c87f811",
+    "uncompressedBase64": "VEFQX0RFUFRIX1ZFQ1RPUl9WMjpUQVBfREVQVEhfVkVDVE9SX1YyOg==",
+    "compressedByteCount": 35,
+    "compressedBase64": "KLUv/SAo1QAAoFRBUF9ERVBUSF9WRUNUT1JfVjI6AQCOnkw=",
+    "klvV1Base64": "VFZFUgAAAAQAAAABRlJBTQAAAAQAAAARUFRTIAAAAAwAAAAAAAAwOQAAAlhDT01QAAAABXpzdGQxAAAAVUxFTgAAAAQAAAAoQ0FMSQAAAAQAAAAARFBUSAAAACMotS/9ICjVAACgVEFQX0RFUFRIX1ZFQ1RPUl9WMjoBAI6eTAA="
+  }
+}

@@ -102,6 +102,34 @@ one tick of the finer relevant timescale.
 This is a TAP-private schema that borrows a compact KLV pattern. It does not
 adopt GoPro/GPMF field meanings and is not a standard depth-video track.
 
+### Serialized `mebx` sample wrapper
+
+TAPCam supplies the KLV bytes as one AVFoundation metadata-item value.
+AVFoundation serializes the raw MP4 `mebx` sample as a QuickTime timed-metadata
+atom; the 8-byte prefix is not part of `TAPDepthKLVFrame`:
+
+```text
+offset   length   encoding       meaning
+0        4        UInt32BE       complete metadata-value atom size
+4        4        UInt32BE       local_key_id
+8        size-8   bytes          TAP KLV frame
+```
+
+For the current one-item sample, the atom size equals the complete sample size.
+`local_key_id` is neither a TAP version nor an arbitrary non-zero flag. It is a
+track-local identifier whose metadata-key-table entry in the `mebx` sample
+description MUST resolve to namespace `mdta` and key
+`com.tapnap.depth.klv`. A reader MUST parse that mapping and MUST NOT assume the
+identifier is always `1`. Values `0` and `0xFFFFFFFF` are reserved by the
+QuickTime timed-metadata format and are not valid mappings for the TAP item.
+
+A reader rejects a truncated atom, a size below 8, a size that escapes the
+sample, extra current-family items, or a missing/ambiguous/wrong key mapping.
+Only after removing this AVFoundation-owned atom prefix does it apply the TAP
+KLV rules below. See Apple's
+[timed metadata sample data format](https://developer.apple.com/documentation/quicktime-file-format/timed_metadata_sample_data_format)
+and [metadata key atom](https://developer.apple.com/documentation/quicktime-file-format/metadata_key_atom).
+
 ## KLV frame version 1
 
 The raw value of one timed metadata item is a sequence of records:
@@ -194,10 +222,16 @@ Proof authentication and depth semantics are separate gates:
 
 1. Locate the unique boxes, parse the exact v1 family, and recompute the asset
    and metadata bindings.
-2. Authenticate the proof/signing relationship.
+2. Pass the local artifact-binding relationship gate: reconstruct and compare
+   `contentDigest` and `signingBinding`. This is not yet backend App Attest
+   signature verification.
 3. Only when explicitly requested, scan the actual tracks, KLV records,
    timestamps, calibration indices, and gap coverage.
 
 Untrusted KLV data MUST NOT trigger an unbounded semantic scan before the proof
 and fixed byte binding are authenticated. A passing depth scan establishes
-container consistency, not physical-world truth.
+container consistency, not App Attest authenticity or physical-world truth. A
+bounded viewer may start this semantic inspection after the local relationship
+gate while backend verification is pending, but MUST keep its results untrusted
+and MUST NOT issue a final authenticated verdict until the backend App Attest
+gate in the binding contract also passes.
