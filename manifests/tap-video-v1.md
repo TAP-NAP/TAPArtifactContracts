@@ -1,10 +1,10 @@
 # TAP Video Manifest v1
 
-Status: current v1 producer contract
+Status: v1 producer contract
 Artifact: one TAP Video MP4
 Example: [`../examples/manifests/tap-video-v1.json`](../examples/manifests/tap-video-v1.json)
 
-This document defines the complete manifest written for one current TAP Video
+This document defines the complete manifest written for one TAP Video v1
 artifact. The JSON is embedded in the MP4; it is not a `.tapnap` sidecar. MP4
 placement and the timed-depth track are defined in
 [`../containers/tap-video-container-v1.md`](../containers/tap-video-container-v1.md).
@@ -31,25 +31,22 @@ The top-level object contains exactly these contract fields:
 | `payload` | object | required | Signed capture and finalized-container facts. |
 | `proofs` | array | required, empty | MUST be `[]`. The proof envelope belongs only in the fixed MP4 proof slot. |
 
-The current producer serializes JSON with keys sorted recursively and without
-escaping `/`. The metadata hash media type is
-`application/vnd.tapnap.video-manifest.payload+json;version=1`, and its bytes
-are the producer's canonical encoding of `payload` alone. `proofs` is excluded
-from that metadata hash. The complete raw manifest box remains covered by the
-MP4 asset hash. This is the current encoder convention; it is not a claim of
-RFC 8785 conformance.
+The manifest and payload use
+[TAP capture canonical JSON](../bindings/capture-binding-and-proof-v1.md#tap-capture-canonical-json).
+The metadata hash media type is
+`application/vnd.tapnap.video-manifest.payload+json;version=1`; its input is the
+exact raw canonical `payload` value embedded in this manifest. `proofs` is
+excluded from that metadata hash. The complete raw manifest box remains covered
+by the MP4 asset hash.
 
 In the tables below:
 
-- **required** means the current producer contract requires the key and a
-  non-`null` value.
+- **required** means the key and a non-`null` value are required.
 - **nullable** means the key is required and JSON `null` has the stated
   unavailable meaning.
-- **optional** means the current Swift writer omits the key when its value is
-  unavailable. Existing current-v1 decoding and the current golden vector also
-  treat an explicit JSON `null` as unavailable. A producer SHOULD use the
-  current omission form; a consumer MUST treat omitted and `null` equivalently
-  for these specifically marked fields.
+- **optional** means a v1 producer omits the key when its value is unavailable.
+  A producer SHOULD use that omission form; a consumer MUST treat omission and
+  explicit JSON `null` equivalently for these specifically marked fields.
 
 All counts are non-negative integers unless a stricter rule is stated. All
 JSON numbers that represent measured values MUST be finite.
@@ -61,7 +58,7 @@ Every group named here is required in `payload`.
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `id` | non-empty string | Capture identifier. It is also the `captureID` bound by the TAP Video content digest. |
-| `packageID` | string | Package identity. The current producer writes a UUID string and requires it to match the queue record before signing. |
+| `packageID` | string | Opaque package identity recorded by the producer. |
 | `capturedAt` | string | UTC ISO 8601 timestamp with fractional seconds, emitted by the same TAP date formatter as the photo families. |
 | `selectedCameraPlan` | object | Resolved capture-device and focal-plan facts. |
 | `container` | object | Finalized MP4 facts. |
@@ -80,7 +77,7 @@ Every group named here is required in `payload`.
 | `deviceUniqueID` | string | optional | Opaque capture-device identifier. Synthetic examples omit it. |
 | `deviceType` | string | optional | Producer platform device-type identifier. |
 | `localizedName` | string | optional | Producer platform display name. |
-| `position` | string | required | Current producer values: `front`, `back`, `unspecified`, or `unknown`. |
+| `position` | string | required | `front`, `back`, `unspecified`, or `unknown`. |
 | `requestedFocalLengthLabel` | string | optional | Requested UI focal label, such as `24mm`; it is a label, not a numeric unit field. |
 | `resolvedFocalLengthLabel` | string | optional | Resolved focal label. |
 | `resolvedZoomFactor` | number | optional | Dimensionless video zoom factor. |
@@ -96,7 +93,7 @@ Every group named here is required in `payload`.
 | `timeScale` | integer | required | ticks per second; `> 0` |
 | `trackCount` | integer | required | actual total MP4 track count |
 
-The finalized file and these facts MUST agree. The current composition is one
+The finalized file and these facts MUST agree. The v1 composition is one
 RGB video track, zero or one audio track, and zero or one TAP timed-metadata
 depth track.
 
@@ -112,11 +109,11 @@ depth track.
 | `timeScale` | integer | required | ticks per second; `> 0` |
 | `nominalFrameRate` | number | optional | frames per second |
 | `frameCount` | integer | optional | captured RGB frame count |
-| `transform` | string | optional | Recorded RGB display transform. Current producer forms are `rotation:N` and `rotation:N;mirrored`, where `N` is `0`, `90`, `180`, or `270` degrees clockwise. |
+| `transform` | string | optional | Recorded RGB display transform. V1 forms are `rotation:N` and `rotation:N;mirrored`, where `N` is `0`, `90`, `180`, or `270` degrees clockwise. |
 
 `transform` applies to RGB presentation and the matching depth display grid.
 For a source grid with top-left-origin integer coordinates `(x, y)`, width `w`,
-and height `h`, the current mapping is:
+and height `h`, the v1 mapping is:
 
 | Transform | Display orientation | Output size | Source to display coordinate |
 | --- | --- | --- | --- |
@@ -131,7 +128,7 @@ and height `h`, the current mapping is:
 
 The literal `not-mirrored` belongs to the separate spatial-registration
 `recordedTransform` / `descriptor.connectionTransform` facts below; it is not
-a current `rgbTrack.transform` form. Readers MUST split transforms on `;` and
+a v1 `rgbTrack.transform` form. Readers MUST split transforms on `;` and
 compare complete components. Unknown or malformed components fail the semantic
 display check rather than silently changing the signed orientation.
 
@@ -143,7 +140,7 @@ All seven keys are serialized. The six track-fact values are nullable.
 | --- | --- | --- | --- |
 | `status` | string | required | `captured`, `notCaptured`, or `unavailable` |
 | `trackID` | integer or `null` | nullable | Actual MP4 track ID. |
-| `codec` | string or `null` | nullable | Actual sample-entry codec; current captured audio uses AAC. |
+| `codec` | string or `null` | nullable | Actual sample-entry codec. |
 | `durationSeconds` | number or `null` | nullable | seconds |
 | `timeScale` | integer or `null` | nullable | ticks per second |
 | `sampleRate` | number or `null` | nullable | samples per second (Hz) |
@@ -163,7 +160,7 @@ nullable so the same family represents a canonical zero-depth capture.
 | Field | Type | Presence | Unit / meaning |
 | --- | --- | --- | --- |
 | `trackID` | integer or `null` | nullable | Timed-metadata MP4 track ID. |
-| `trackCodec` | string or `null` | nullable | Current stored-depth value: `mebx`. |
+| `trackCodec` | string or `null` | nullable | Exact stored-depth value `mebx` when samples are present. |
 | `trackDurationSeconds` | number or `null` | nullable | seconds |
 | `trackTimeScale` | integer or `null` | nullable | ticks per second |
 | `sampleCount` | integer | required | Successfully stored KLV depth samples. |
@@ -198,7 +195,7 @@ Video. `gaps` may truthfully describe the affected interval, usually as
 | `bytesPerSample` | integer | required | `2` for `hdep`/`hdis`; `4` for `fdep`/`fdis` |
 | `byteOrder` | string | required | `little-endian` |
 | `uncompressedFrameByteCount` | integer | required | bytes; MUST equal `packedRowStride * height` and MUST be at most 32 MiB |
-| `compressionPolicy` | string | required | Current writer: `per-frame:zstd1|raw`; current v1 readers also recognize `per-frame:lzfse|raw` and `per-frame:raw`. Every KLV `COMP` value MUST be allowed by this policy. |
+| `compressionPolicy` | string | required | `per-frame:zstd1|raw`, `per-frame:lzfse|raw`, or `per-frame:raw`. Every KLV `COMP` value MUST be allowed by this policy. |
 
 The valid `(kind, pixelFormat, bytesPerSample)` combinations are exactly
 `(depth,hdep,2)`, `(depth,fdep,4)`, `(disparity,hdis,2)`, and
@@ -224,7 +221,7 @@ table reaches its limit; a consumer clears depth for the whole range. A
 
 | Field | Type | Presence | Unit / meaning |
 | --- | --- | --- | --- |
-| `status` | string | required | Current valid artifact states: `registered` or `unavailable`. The schema enum contains `approximate`, but current validation rejects it; it MUST NOT enable an overlay. |
+| `status` | string | required | Valid v1 artifact states are `registered` or `unavailable`. `approximate` is not valid v1 input and MUST NOT enable an overlay. |
 | `mapping` | string | required | Registration family identifier when registered, otherwise `unavailable` or a producer reason prefixed by `avdepthdata-registration-prerequisites-unavailable:`. |
 | `rgbReferenceDimensions` | `Dimensions` | optional | aligned RGB coded pixels |
 | `depthReferenceDimensions` | `Dimensions` | optional | depth pixels |
@@ -301,8 +298,8 @@ registered 2D playback.
 
 | Field | Type | Presence | Unit / meaning |
 | --- | --- | --- | --- |
-| `timing` | string | required | Current writer: `capture-output-presentation-timestamps`. |
-| `rgbToDepthMapping` | string | required | Current stored-depth writer: `independent-timed-metadata`; canonical zero-depth value: `no-depth-samples`. |
+| `timing` | string | required | Exact v1 value `capture-output-presentation-timestamps`. |
+| `rgbToDepthMapping` | string | required | `independent-timed-metadata` when depth samples are stored; canonical zero-depth value `no-depth-samples`. |
 | `maxObservedDeltaSeconds` | number | optional | seconds; maximum observed synchronized RGB/depth delivery delta |
 | `maxObservedDepthIntervalSeconds` | number | optional | seconds; maximum interval between stored depth samples |
 | `nominalDepthIntervalSeconds` | number | optional | seconds; expected source depth cadence |
@@ -319,8 +316,7 @@ the signed gap table.
 | `reason` | string | required | `userStop`, `durationLimit`, `thermalPressure`, `systemPressure`, `appLifecycle`, `storageFailure`, or `captureFailure` |
 | `recordedDurationSeconds` | number | required | seconds; finalized recorded duration, `>= 0` |
 
-The current UI's 180-second default stop is runtime policy, not a v1 decoder
-limit.
+This contract sets no capture-duration limit.
 
 ### `software`
 
@@ -329,7 +325,7 @@ limit.
 | `appIdentifier` | string | required | Producer application identifier. |
 | `appVersion` | string | required | Producer short version. |
 | `buildNumber` | string | required | Producer build number. |
-| `schemaWriter` | string | required | Current producer value: `TAPCamDemo.TAPVideoManifestEncoder`. |
+| `schemaWriter` | non-empty string | required | Opaque producer-defined schema-writer identifier. |
 
 ## Consumer obligations
 
@@ -338,6 +334,3 @@ authenticates the MP4 and canonical payload through the TAP Video content
 binding before treating any payload claim as authenticated. A valid manifest
 does not by itself prove the physical scene, event, person, time, non-AI origin,
 or depth correctness.
-
-Current verifier coverage gaps are tracked only in
-[Known Extraction Divergences](../KNOWN_DIVERGENCES.md).

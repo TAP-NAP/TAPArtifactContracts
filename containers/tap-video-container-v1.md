@@ -1,6 +1,6 @@
 # TAP Video MP4 Container and Timed Depth v1
 
-Status: current v1 container contract
+Status: v1 container contract
 Manifest: [`../manifests/tap-video-v1.md`](../manifests/tap-video-v1.md)
 
 One TAP Video capture is one `video/mp4` file. It is not a ZIP archive, a
@@ -10,10 +10,10 @@ slot, and—when samples were stored—the TAP-private timed-depth track.
 
 ## Track composition
 
-| Part | Cardinality | Current contract |
+| Part | Cardinality | V1 contract |
 | --- | --- | --- |
-| RGB video | exactly one | Standard MP4 video track. Runtime currently falls back to H.264, but the manifest binds the actual codec and track facts. |
-| Audio | zero or one | Standard audio track; current captured audio uses AAC. The manifest distinguishes `captured`, `notCaptured`, and `unavailable`. |
+| RGB video | exactly one | Standard MP4 video track. The manifest binds the actual codec and track facts. |
+| Audio | zero or one | Standard audio track. The manifest binds the actual codec and distinguishes `captured`, `notCaptured`, and `unavailable`. |
 | TAP timed depth | zero or one | Private timed-metadata track, present only when at least one real depth sample was stored. |
 
 With stored depth, the file therefore has one RGB track, one metadata track,
@@ -79,7 +79,8 @@ offset   length   encoding       meaning
 8        size-8   bytes          TAP KLV frame
 ```
 
-For the current one-item sample, the atom size equals the complete sample size.
+Each v1 metadata sample contains one item, so the atom size equals the complete
+sample size.
 `local_key_id` is neither a TAP version nor an arbitrary non-zero flag. It is a
 track-local identifier whose metadata-key-table entry in the `mebx` sample
 description MUST resolve to namespace `mdta` and key
@@ -88,7 +89,7 @@ identifier is always `1`. Values `0` and `0xFFFFFFFF` are reserved by the
 QuickTime timed-metadata format and are not valid mappings for the TAP item.
 
 A reader rejects a truncated atom, a size below 8, a size that escapes the
-sample, extra current-family items, or a missing/ambiguous/wrong key mapping.
+sample, extra v1-family items, or a missing/ambiguous/wrong key mapping.
 Only after removing this AVFoundation-owned atom prefix does it apply the TAP
 KLV rules below. See Apple's
 [timed metadata sample data format](https://developer.apple.com/documentation/quicktime-file-format/timed_metadata_sample_data_format)
@@ -104,29 +105,26 @@ zero padding to the next 4-byte boundary
 ```
 
 The FourCC is four ASCII bytes. The payload length and all integer control
-values below are big-endian. Alignment padding is zero. Records may appear in
-the current producer order shown below, but readers identify records by key,
-not by position.
+values below are big-endian. Alignment padding is zero. Readers identify records
+by key, not by position; record order is not significant.
 
 | Key | Presence | Payload | Meaning |
 | --- | --- | --- | --- |
 | `TVER` | required, once | 4-byte UInt32BE | KLV frame schema version; MUST equal `1`. |
-| `FRAM` | required, once | 4-byte UInt32BE | Zero-based stored-depth frame index. Current streams use contiguous indices in sample order. |
+| `FRAM` | required, once | 4-byte UInt32BE | Zero-based timed-depth MP4 sample ordinal. Values MUST be contiguous in sample order from `0` through `depthCoverage.sampleCount - 1`. |
 | `PTS ` | required, once | 8-byte Int64BE value followed by 4-byte Int32BE timescale | Capture-relative presentation time in ticks; timescale MUST be `> 0`; seconds are `value / timescale`. |
 | `COMP` | required, once | ASCII bytes | `raw`, `lzfse`, or `zstd1`. The value MUST also be permitted by the manifest `compressionPolicy`. |
 | `ULEN` | required, once | 4-byte UInt32BE | Uncompressed packed-frame byte count. It MUST equal `depthCoverage.format.uncompressedFrameByteCount`. |
 | `CALI` | optional, at most once | 4-byte UInt32BE | Zero-based index into `spatialRegistration.calibrationTable`; it MUST be in bounds. |
 | `DPTH` | required, once | bytes | Raw or independently compressed packed depth/disparity bytes. |
 
-The current producer emits records in this order: `TVER`, `FRAM`, `PTS `,
-`COMP`, `ULEN`, optional `CALI`, then `DPTH`. Unknown four-character keys are
-skippable for forward-compatible parsing. An unknown key acquires no v1
-semantics and MUST NOT replace a required key.
+Unknown four-character keys are skippable for forward-compatible parsing. An
+unknown key acquires no v1 semantics and MUST NOT replace a required key.
 
-The schema source also defines FourCC constants `DKND`, `PIXF`, `DIM `, `RSTR`,
-and `CALR`, but the current v1 frame writer does not emit them. Their invariant
-facts live in the manifest, so these constants are not additional required v1
-records and this extraction does not assign them new wire meanings.
+The FourCC values `DKND`, `PIXF`, `DIM `, `RSTR`, and `CALR` are not v1 frame
+records. Their invariant facts live in the manifest; a writer MUST NOT emit
+them as substitutes for required records, and a reader MUST NOT assign them v1
+semantics.
 
 ## Packed frame and codec rules
 
@@ -134,34 +132,33 @@ records and this extraction does not assign them new wire meanings.
   `hdep`, `fdep`, `hdis`, and `fdis`.
 - `DPTH` stores exactly the logical row bytes. Capture-buffer padding is not
   part of the packed frame.
-- Packed sample bytes use the manifest byte order, currently `little-endian`.
-- Frames are encoded independently. The current writer prefers Zstandard level
-  1 (`zstd1`) and falls back to `raw` if compression fails or is not smaller.
-- Current v1 readers accept `raw`, `lzfse`, and `zstd1`. LZFSE remains readable
-  compatibility behavior; it is not a claim that the current writer emits it.
+- Packed sample bytes use the manifest byte order, exactly `little-endian` in
+  v1.
+- Frames are encoded independently. `COMP` and the manifest compression policy
+  select `raw`, `lzfse`, or Zstandard level 1 (`zstd1`). V1 consumers MUST
+  implement all three values and accept each only when the signed manifest
+  policy permits it.
 - After decoding, the byte count MUST equal both `ULEN` and the manifest
   `uncompressedFrameByteCount`. Depth samples are not quantized, synthesized,
   interpolated, or duplicated to match RGB cadence.
 
 ## Bounds and rejection
 
-The versioned KLV/container limits extracted from current producers and readers
-are:
+The v1 KLV/container limits are:
 
 | Limit | Maximum |
 | --- | --- |
 | Manifest-box JSON payload | 1 MiB |
 | Records in one KLV frame | 32 |
 | Uncompressed packed depth frame | 32 MiB |
-| `DPTH` encoded payload accepted by the current frame codec | 32 MiB |
+| Encoded `DPTH` payload | 32 MiB |
 | Complete KLV record sequence for one frame | 32 MiB + 4,096 bytes |
 | Manifest depth-gap entries | 1,024 |
 | Manifest calibration-table entries | 16 |
 
-The 180-second capture default is not a format or decoder limit. Individual
-consumers may impose additional bounded-input limits, such as a browser's
-maximum file size, box count, or sample count; those safety budgets do not
-change the v1 wire format.
+This format sets no capture-duration limit. Consumers may impose additional
+bounded-input limits, such as a maximum file size, box count, or sample count;
+those safety budgets do not change the v1 wire format.
 
 A KLV reader MUST fail closed for:
 

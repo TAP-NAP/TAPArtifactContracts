@@ -17,18 +17,28 @@ shared by TAPCam producers and TAP artifact verifiers.
 
 ## Authority and change order
 
-For the TAP-0094 bootstrap, resolve disagreements in this order:
+This repository must be interpretable without a producer or verifier checkout.
+Resolve contract questions in this order:
 
-1. [TAPCamDemo Product Contract](https://github.com/TAP-NAP/TAPCamDemo/blob/main/Docs/ProductContract.md).
-2. [Approved TAP-0094 scope](https://github.com/TAP-NAP/TAPCamDemo/blob/main/Docs/ProjectBoard.md#tap-0094--establish-a-documentation-only-artifact-contract-repository).
-3. Current specialized format and security contracts.
-4. Current producer and verifier implementations and tests.
-5. Historical documents and Git history.
+1. The current [contract index](CONTRACTS.md) and
+   [versioning policy](VERSIONING.md).
+2. The normative document that owns the affected family or container.
+3. The synthetic examples and exact vectors indexed by
+   [examples/README.md](examples/README.md).
+4. This repository's Git history for historical context only.
 
-After TAP-0094 completes and source repositories link to a released revision,
-this repository owns the shared wire-level conventions. Product behavior,
+An approved product decision may authorize a contract change, but the complete
+resulting rule must be recorded here. Do not require a private task, source
+file, checkout, or implementation link to interpret the released contract.
+
+This repository owns the shared wire-level conventions. Product behavior,
 runtime orchestration, UI, backend operation, and repository workflow remain in
 their respective owner repositories.
+
+Do not store producer/verifier source snapshots, adoption ledgers, executable-
+mirror inventories, or implementation-gap trackers here. Downstream repositories
+own those local records and link to this repository; this repository does not
+link back to them.
 
 ## Normative writing rules
 
@@ -50,10 +60,11 @@ their respective owner repositories.
 
 Before handing off a contract change:
 
-1. Name the owning task and source snapshot.
-2. Check identifiers and field names against producer and verifier evidence.
+1. Name the affected contract and change classification.
+2. Check identifiers and field names against the owning normative document and
+   examples.
 3. Parse every JSON example.
 4. Scan local Markdown links and duplicate normative statements.
-5. Record unresolved producer/verifier differences instead of silently choosing
-   a new behavior.
+5. Keep implementation mismatches in the affected downstream repository instead
+   of importing its conformance ledger here or silently changing this contract.
 6. Do not commit or push unless the product owner explicitly requests it.

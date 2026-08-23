@@ -1,0 +1,90 @@
+{
+  "format": "urn:tapnap:contracts:tap-capture-canonical-json-vector:v1",
+  "expectedDecision": "accept-exact-vector",
+  "scope": "One immutable synthetic case. It is representative, not an exhaustive binary floating-point formatter.",
+  "typedInput": {
+    "memberInsertionOrder": [
+      "trueValue",
+      "string",
+      "numbers",
+      "nullValue",
+      "nested",
+      "integerMin",
+      "integerMax",
+      "float32Numbers",
+      "falseValue",
+      "array"
+    ],
+    "array": {
+      "type": "array of signed integers",
+      "value": [3, 1, 2]
+    },
+    "falseValue": {
+      "type": "boolean",
+      "value": false
+    },
+    "float32Numbers": {
+      "type": "array of IEEE 754 binary32 values",
+      "bitPatternsHex": [
+        "0x00000000",
+        "0x80000000",
+        "0x3DCCCCCD",
+        "0x40490FDA",
+        "0x00000001",
+        "0x7F7FFFFF"
+      ]
+    },
+    "integerMax": {
+      "type": "signed 64-bit integer",
+      "value": "9223372036854775807"
+    },
+    "integerMin": {
+      "type": "signed 64-bit integer",
+      "value": "-9223372036854775808"
+    },
+    "nested": {
+      "type": "object of signed integers",
+      "memberInsertionOrder": ["z", "a", "A", "é", "𐀀"],
+      "values": {
+        "z": 1,
+        "a": 2,
+        "A": 3,
+        "é": 4,
+        "𐀀": 5
+      }
+    },
+    "nullValue": {
+      "type": "null"
+    },
+    "numbers": {
+      "type": "array of IEEE 754 binary64 values",
+      "bitPatternsHex": [
+        "0x0000000000000000",
+        "0x8000000000000000",
+        "0x3FF0000000000000",
+        "0xBFF0000000000000",
+        "0x3FF8000000000000",
+        "0x3F1A36E2EB1C432D",
+        "0x3EE4F8B588E368F1",
+        "0x430C6BF526340000",
+        "0x4341C37937E08000",
+        "0x400921FB54442D18",
+        "0x41B3DE4355555555",
+        "0x0000000000000001",
+        "0x7FEFFFFFFFFFFFFF"
+      ]
+    },
+    "string": {
+      "type": "Unicode scalar string",
+      "value": "slash / quote \" backslash \\ newline\n control \u0001 composed é decomposed é emoji 😀 separators \u2028\u2029"
+    },
+    "trueValue": {
+      "type": "boolean",
+      "value": true
+    }
+  },
+  "canonicalUTF8Display": "{\"array\":[3,1,2],\"falseValue\":false,\"float32Numbers\":[0,-0,0.1,3.1415925,1e-45,3.4028235e+38],\"integerMax\":9223372036854775807,\"integerMin\":-9223372036854775808,\"nested\":{\"A\":3,\"a\":2,\"z\":1,\"é\":4,\"𐀀\":5},\"nullValue\":null,\"numbers\":[0,-0,1,-1,1.5,0.0001,1e-05,1000000000000000,1e+16,3.141592653589793,333333333.3333333,5e-324,1.7976931348623157e+308],\"string\":\"slash / quote \\\" backslash \\\\ newline\\n control \\u0001 composed é decomposed é emoji 😀 separators \u2028\u2029\",\"trueValue\":true}",
+  "canonicalUTF8Base64": "eyJhcnJheSI6WzMsMSwyXSwiZmFsc2VWYWx1ZSI6ZmFsc2UsImZsb2F0MzJOdW1iZXJzIjpbMCwtMCwwLjEsMy4xNDE1OTI1LDFlLTQ1LDMuNDAyODIzNWUrMzhdLCJpbnRlZ2VyTWF4Ijo5MjIzMzcyMDM2ODU0Nzc1ODA3LCJpbnRlZ2VyTWluIjotOTIyMzM3MjAzNjg1NDc3NTgwOCwibmVzdGVkIjp7IkEiOjMsImEiOjIsInoiOjEsIsOpIjo0LCLwkICAIjo1fSwibnVsbFZhbHVlIjpudWxsLCJudW1iZXJzIjpbMCwtMCwxLC0xLDEuNSwwLjAwMDEsMWUtMDUsMTAwMDAwMDAwMDAwMDAwMCwxZSsxNiwzLjE0MTU5MjY1MzU4OTc5MywzMzMzMzMzMzMuMzMzMzMzMyw1ZS0zMjQsMS43OTc2OTMxMzQ4NjIzMTU3ZSszMDhdLCJzdHJpbmciOiJzbGFzaCAvIHF1b3RlIFwiIGJhY2tzbGFzaCBcXCBuZXdsaW5lXG4gY29udHJvbCBcdTAwMDEgY29tcG9zZWQgw6kgZGVjb21wb3NlZCBlzIEgZW1vamkg8J+YgCBzZXBhcmF0b3JzIOKAqOKAqSIsInRydWVWYWx1ZSI6dHJ1ZX0=",
+  "canonicalUTF8ByteCount": 491,
+  "canonicalUTF8SHA256": "47fa943b3af7d6ad7e43653c9175a4d82c7248764dc8b7dbc7b152950d2ab473"
+}

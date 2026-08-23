@@ -44,8 +44,9 @@ already permits them:
 
 Editorial clarification is non-breaking only when it does not change any
 producer byte or consumer decision. If an apparent clarification reveals that
-producer and verifier differ, document the discrepancy and keep the current
-source authority in place until the owner approves a resolution.
+an implementation differs, that downstream repository must record the mismatch
+without redefining this contract. Changing the shared decision still requires
+an owner-approved compatible or breaking family revision.
 
 ## Current pre-release policy
 

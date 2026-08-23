@@ -1,7 +1,5 @@
 # Photo Containers v1
 
-Task: `TAP-0094`. Source boundary: [SOURCE_SNAPSHOT.md](../SOURCE_SNAPSHOT.md).
-
 This document defines where Still Photo v1 and Live Photo v1 manifests and
 proofs live in reviewed HEIC and JPEG photo-depth artifacts. It does not mandate
 an ImageIO implementation and it does not move the manifest into a sidecar.
@@ -47,12 +45,11 @@ by the XMP namespace and property, not a hard-coded box offset. For JPEG, the
 property is in the JPEG XMP metadata carried by APP1; the APP1 byte location may
 vary after metadata-preserving ImageIO output.
 
-The producer obtains the base file from
-`AVCapturePhoto.fileDataRepresentation(with:)`, injects XMP by copying the image
-source with metadata merge rather than decoding/re-encoding pixels, and requires
-exact JSON-string readback before reserving the proof slot. A verifier uses the
-resulting bytes and MUST NOT reconstruct the signed artifact from decoded image
-pixels.
+The producer starts from the format-native captured file, injects XMP through a
+metadata-preserving copy rather than decoding and re-encoding pixels, and
+requires exact JSON-string readback before reserving the proof slot. A verifier
+uses the resulting bytes and MUST NOT reconstruct the signed artifact from
+decoded image pixels.
 
 The producer also writes this exact EXIF UserComment pointer in both reviewed
 containers:
@@ -77,7 +74,7 @@ hex:   54 41 50 43 41 4d 50 52 4f 4f 46 53 4c 4f 54 31
 ASCII: TAPCAMPROOFSLOT1
 ```
 
-Current producer layout for a normal 32-bit-size box is:
+The v1 producer layout for a normal 32-bit-size box is:
 
 | Box-relative byte range | Size | Meaning |
 | --- | ---: | --- |
@@ -86,7 +83,7 @@ Current producer layout for a normal 32-bit-size box is:
 | `8..<24` | 16 | TAP user type above |
 | `24..<61464` | 61,440 | Fixed proof-slot payload |
 
-When no slot exists, the in-memory photo producer appends this top-level box.
+When no slot exists, the producer appends this top-level box before signing.
 The locator parses top-level BMFF boxes, including ordinary 32-bit size,
 large-size (`size32 == 1`), and to-end (`size32 == 0`) forms, and identifies the
 slot by `uuid` plus the exact user type. A verifier MUST find exactly one match,
@@ -142,6 +139,3 @@ A conforming verifier MUST:
   fields and the binding's `depthResource`; and
 - for Live Photo, treat `paired-video.mov` as a separate full-file signed
   resource rather than a nested photo-container region.
-
-Known source-comment and reader differences are tracked only in
-[Known Extraction Divergences](../KNOWN_DIVERGENCES.md).

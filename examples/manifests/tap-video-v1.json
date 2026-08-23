@@ -181,7 +181,7 @@
       "appIdentifier": "example.invalid.tapcam.synthetic",
       "appVersion": "1",
       "buildNumber": "1",
-      "schemaWriter": "TAPCamDemo.TAPVideoManifestEncoder"
+      "schemaWriter": "synthetic.tap-video-manifest-writer.v1"
     }
   },
   "proofs": []

@@ -1,7 +1,5 @@
 # Live Photo Manifest v1
 
-Task: `TAP-0094`. Source boundary: [SOURCE_SNAPSHOT.md](../SOURCE_SNAPSHOT.md).
-
 This is a distinct manifest family for one TAP Live Photo: a primary HEIC/JPEG
 photo containing the manifest, auxiliary still-photo depth when available, and
 the proof slot, plus one byte-preserved paired MOV. It is not a Still Photo alias

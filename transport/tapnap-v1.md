@@ -1,6 +1,6 @@
 # `.tapnap` Verification Transport v1
 
-Status: current v1 transport contract for Still Photo and Live Photo
+Status: v1 transport contract for Still Photo and Live Photo
 Routing sidecar family: `urn:tapnap:tapcam:verification-export:v1`
 
 `.tapnap` is a byte-preserving transport wrapper. It carries original media to
@@ -8,21 +8,21 @@ a verifier; it is not an artifact-manifest family, a signature format, or
 authenticity evidence. The authoritative Still Photo or Live Photo manifest and
 proof remain embedded in the primary HEIC/JPEG resource.
 
-Current product support is deliberately bounded:
+V1 support is deliberately bounded:
 
 | Artifact | `.tapnap` status |
 | --- | --- |
-| Still Photo v1 | current |
-| Live Photo v1 | current |
+| Still Photo v1 | supported |
+| Live Photo v1 | supported |
 | TAP Video v1 | future / Coming Soon |
 
-A current TAP Video is one signed MP4 and MUST NOT be wrapped in `.tapnap` or
+A TAP Video v1 artifact is one signed MP4 and MUST NOT be wrapped in `.tapnap` or
 routed with `tapcam-export.json`. This document assigns no Video package kind or
 Video resource role.
 
 ## Transport identity
 
-| Identifier | Current value |
+| Identifier | V1 value |
 | --- | --- |
 | Preferred filename | `TAPNAP-Capture.tapnap` |
 | Filename extension | `.tapnap` |
@@ -33,14 +33,15 @@ Video resource role.
 A verifier recognizes a capture package only from the `.tapnap` extension or
 the exact TAPNAP MIME type. Generic `.zip`, `application/zip`, ZIP magic, a
 legacy marker, or archive contents MUST NOT silently reclassify an input as a
-current TAPNAP package. Raw HEIC/HEIF/JPG/JPEG and TAP Video MP4 inputs remain
+v1 TAPNAP package. Raw HEIC/HEIF/JPG/JPEG and TAP Video MP4 inputs remain
 their own input routes.
 
-The current producer writes media bytes unchanged and writes archive entries
-without compression. A verifier MUST NOT transcode or normalize declared media
-before embedded-proof and resource-hash verification.
+A v1 producer MUST preserve each media resource byte-for-byte. ZIP compression
+method is transport-local and has no signed meaning. A verifier MUST NOT
+transcode or normalize declared media before embedded-proof and resource-hash
+verification.
 
-## Current archive layouts
+## V1 archive layouts
 
 Still Photo:
 
@@ -59,8 +60,8 @@ TAPNAP-Capture.tapnap
 └── tapcam-export.json
 ```
 
-The sidecar is exactly the root entry `tapcam-export.json`. Current producers
-write the declared media resources as root entries with the names above. A
+The sidecar is exactly the root entry `tapcam-export.json`. V1 producers write
+the declared media resources as root entries with the names above. A
 Live Photo whose original paired video is unavailable is not a successful Live
 Photo package; a separately shared primary-photo-only fallback remains ordinary
 media and must report that full Live Photo verification is incomplete.
@@ -72,7 +73,7 @@ set of resource roles to exact archive entries. A verifier derives the actual
 manifest family and verification scope from the proof-bearing primary photo,
 never from `packageKind`, `mediaType`, warnings, filenames, or archive shape.
 
-Every current producer sidecar contains these fields:
+Every v1 producer sidecar contains these fields:
 
 | Field | Type | Presence | Required value / meaning |
 | --- | --- | --- | --- |
@@ -96,7 +97,7 @@ field similarity and legacy aliases do not permit fallback.
 
 ## Resource descriptors
 
-Every `resources` element has exactly these current fields:
+Every `resources` element has exactly these v1 fields:
 
 | Field | Type | Presence | Meaning |
 | --- | --- | --- | --- |
@@ -104,9 +105,9 @@ Every `resources` element has exactly these current fields:
 | `filename` | non-empty string | required | Exact archive-entry path to resolve. |
 | `mediaType` | non-empty string | required | Producer-declared media type for routing and presentation only. |
 
-Current roles are:
+V1 roles are:
 
-| Role | Cardinality | Declared resource | Current media type |
+| Role | Cardinality | Declared resource | V1 media type |
 | --- | --- | --- | --- |
 | `primaryPhoto` | exactly one in every package | Original proof-bearing HEIC/HEIF or JPEG bytes | Producer uses `public.heic` for HEIC and `public.jpeg` for JPEG. |
 | `pairedLivePhotoVideo` | zero for `stillPhoto`; exactly one for `livePhotoPackage` | Original paired QuickTime MOV bytes | `com.apple.quicktime-movie` |
@@ -130,7 +131,7 @@ checks, not authenticity checks.
 
 ## Fail-closed package resolution
 
-A verifier MUST reject the package as current-v1 input when any of the following
+A verifier MUST reject the package as v1 input when any of the following
 is true:
 
 - the input was reached only through generic ZIP detection rather than the
@@ -139,7 +140,7 @@ is true:
   limits;
 - the root `tapcam-export.json` entry is missing, duplicated, too large,
   non-UTF-8, non-JSON, or not an object;
-- `schemaID` or `version` is missing or not the exact current v1 value;
+- `schemaID` or `version` is missing or not the exact v1 value;
 - a complete producer field is missing or has the wrong JSON type;
 - `packageKind` is not `stillPhoto` or `livePhotoPackage`;
 - `resources` contains zero or multiple `primaryPhoto` descriptors;
@@ -161,15 +162,10 @@ valid verification result.
 ## Bounded-input behavior
 
 Consumers MUST bound archive bytes, entry count, individual entry sizes,
-aggregate extracted bytes, and sidecar bytes before or during extraction. The
-current browser verifier uses implementation safety budgets of 512 MiB archive
-bytes, 16 archive entries, 384 MiB per media resource, 512 MiB aggregate
-extracted bytes, and 256 KiB for `tapcam-export.json`. These are consumer safety
-limits, not new signed fields and not evidence about the media.
+aggregate extracted bytes, and sidecar bytes before or during extraction. Exact
+safety budgets are consumer-local policy; they are not signed fields, wire-format
+limits, or evidence about the media.
 
 Only the root sidecar and supported photo/MOV candidates need to be
 materialized. Paths MUST be resolved as archive entries, not written to
 arbitrary filesystem locations.
-
-Current verifier coverage gaps are tracked only in
-[Known Extraction Divergences](../KNOWN_DIVERGENCES.md).

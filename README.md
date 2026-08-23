@@ -24,8 +24,6 @@ It answers three questions:
   [MP4/KLV](containers/tap-video-container-v1.md) container conventions
 - [`.tapnap` routing-sidecar conventions](transport/tapnap-v1.md)
 - [Synthetic positive and negative JSON examples plus exact shared golden vectors](examples/README.md)
-- [Extraction source snapshot](SOURCE_SNAPSHOT.md)
-- [Known extraction divergences](KNOWN_DIVERGENCES.md)
 
 ## What does not live here
 
@@ -33,7 +31,8 @@ This is not a software package. It contains no Mobile App or browser runtime
 code, SDK, generated model, parser, validator, or dependency. It does not own
 camera selection, capture orchestration, Photos persistence, retry behavior,
 Verifier UI, playback, backend deployment, credential operations, or product
-claims.
+claims. It also does not track downstream source snapshots, adoption state,
+implementation gaps, or private executable-mirror locations.
 
 The actual per-capture manifest also does not move here:
 

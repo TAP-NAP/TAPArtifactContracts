@@ -1,8 +1,5 @@
 # Capture Binding and Proof v1
 
-Tasks: `TAP-0094`, `TAP-0095`. Source boundary:
-[SOURCE_SNAPSHOT.md](../SOURCE_SNAPSHOT.md).
-
 This document defines the shared Still Photo, Live Photo, and TAP Video byte-
 binding and App Attest proof relationship. It does not define key registration,
 credential lifecycle, backend deployment, or product verification copy.
@@ -85,22 +82,50 @@ hash in `signedResources`.
 
 ## TAP capture canonical JSON
 
-Every canonical JSON operation above uses the current Swift
-`JSONEncoder` with both `.sortedKeys` and `.withoutEscapingSlashes`:
+**TAP capture canonical JSON** is compact UTF-8 JSON with these v1 lexical
+rules:
 
-- output is compact UTF-8 JSON with no pretty-print whitespace;
-- object keys are sorted by the encoder at every object level;
-- array order is preserved and is significant;
-- `/` is not escaped only because of `.withoutEscapingSlashes`;
-- optionals are omitted when absent except the manifest's explicit
-  `payload.location: null` rule;
-- non-finite floating-point values are not encoded; and
-- no Unicode normalization or application-level number rewriting is performed.
+- there is no byte-order mark, insignificant whitespace, or trailing data;
+- object member names are unique and sorted recursively in ascending unsigned
+  UTF-8 byte order; the defined v1 field names are ASCII;
+- array order is preserved and significant;
+- `null`, `true`, and `false` use those lowercase spellings;
+- values in fields declared `integer` use the shortest base-10 form, with no
+  leading zero and no positive sign; integer zero is `0` and a negative integer
+  begins with `-`;
+- `"`, `\\`, backspace, tab, newline, form feed, and carriage return are escaped
+  as `\"`, `\\`, `\b`, `\t`, `\n`, `\f`, and `\r`; other U+0000 through
+  U+001F scalars use lowercase `\u00xx`; `/` and all other Unicode scalars are
+  emitted directly as UTF-8, with no Unicode normalization;
+- absent optional members are omitted except where a manifest table explicitly
+  requires `null`; and
+- values in fields declared `number` use valid finite JSON number tokens;
+  floating-point negative zero may therefore appear as `-0`. NaN and infinities
+  are forbidden, and no consumer may rewrite a number token before hashing.
 
-This profile is called **TAP capture canonical JSON**. It is not claimed to be
-RFC 8785/JCS. A non-Swift verifier MUST produce identical bytes for the values
-written by the current producer before comparing hashes. The formatted JSON
-examples in this repository are shape examples, not canonical-byte vectors.
+For `manifest.payload`, byte preservation is part of the contract. The exact
+payload-value byte sequence embedded in the top-level manifest MUST be
+byte-for-byte identical to the sequence used for `metadataHash` (and the Live
+Photo `tapDepthManifestPayload` byte count). A consumer MUST locate that raw JSON
+value after decoding its container wrapper, validate the manifest and the
+lexical rules above, and hash the exact raw payload bytes. It MUST NOT use a
+parse-then-reserialize result as the hash input.
+
+V1 did not separately version an exhaustive binary32/binary64-to-decimal
+algorithm for every possible non-integer value. The producer-emitted number
+token is therefore part of the signed capture bytes, not permission for a
+consumer to choose an equivalent spelling. The
+[exact canonical-byte vector](../examples/vectors/tap-capture-canonical-json-v1.json)
+is an immutable oracle for its representative values, not a general number
+formatter. A producer claiming v1 must retain byte-compatible numeric emission
+for every value it writes; changing that emission requires contract review and
+cannot be treated as an editorial clarification. This profile is not RFC
+8785/JCS.
+
+The v1 `contentDigest`, signing binding, proof value, and proof envelope contain
+no floating-point fields, so their canonical bytes are fully determined by the
+other rules above. The floating-point limitation applies to manifest payload
+number tokens, whose exact embedded bytes remain the hash input.
 
 ## Hash and encoding primitives
 
@@ -115,8 +140,7 @@ examples in this repository are shape examples, not canonical-byte vectors.
 
 ## `contentDigest`
 
-The proof-value member is named `contentDigest` in serialized JSON even though
-the current Swift type is also called `CaptureContentBinding`.
+The serialized proof-value member is named `contentDigest`.
 
 | Field | JSON type | Presence | Required meaning |
 | --- | --- | --- | --- |
@@ -185,11 +209,11 @@ HEIC, JPEG, and TAP Video slot carries this same 61,440-byte payload:
 
 The maximum envelope length is `61408` bytes. An unsigned pending artifact has
 `N == 0`; a signed artifact requires `N > 0`. The producer MUST zero the four
-reserved bytes and every byte after the envelope. A reader MUST reject an
-incorrect payload size, magic, version, envelope length or JSON, or non-zero
-trailing padding, as well as a missing or duplicate slot. Current reader
-handling of the reserved bytes is recorded in
-[Known Extraction Divergences](../KNOWN_DIVERGENCES.md#container-source-and-reader-gaps).
+reserved bytes and every byte after the envelope. Non-zero reserved bytes are
+producer nonconformance; a v1 reader MAY reject them but MUST NOT assign them
+meaning. A reader MUST reject an incorrect payload size, magic, version,
+envelope length or JSON, or non-zero trailing padding, as well as a missing or
+duplicate slot.
 
 The payload alone is not the `assetHash` excluded range. That range is the
 complete enclosing UUID box or JPEG APP11 segment defined by
@@ -251,8 +275,8 @@ The fixed slot's envelope bytes are canonical JSON for this object:
 | `createdAt` | string | Required | Exact `contentDigest.capturedAt` |
 | `value` | string | Required | Unpadded base64url of canonical `CaptureAssertionProofValue` JSON bytes |
 
-Although the Swift schema types the final three members as optional, a valid
-signed artifact requires all of them; omission or `null` is rejected.
+A valid signed artifact requires `keyID`, `createdAt`, and `value`; omission or
+`null` is rejected.
 `manifest.proofs` remains empty before and after this object is written into the
 slot.
 
@@ -350,8 +374,8 @@ The local verifier MUST, in order:
    algorithm, non-empty `keyID`, non-empty assertion, zero slot padding, empty
    manifest `proofs`, and an allowed manifest/content-binding family pair.
 4. Recompute every family-specific input available to the named scope from the
-   received bytes and embedded payload; do not copy an available byte-derived
-   value from the proof.
+   received bytes and the exact raw embedded payload value; do not reserialize
+   that value or copy an available byte-derived value from the proof.
 5. For Still Photo, TAP Video, and full Live Photo, rebuild the complete
    `contentDigest` and compare it structurally and completely with
    `proof.value.contentDigest`, including byte counts, excluded range, slot
@@ -431,6 +455,3 @@ inactive key, malformed assertion, signature failure, app/environment mismatch,
 or backend counter/replay-policy failure MUST fail at the backend gate. A
 transport label, decoded-pixel match, or backend-valid result alone MUST NOT
 upgrade either failure to valid.
-
-Known implementation and vector-coverage gaps are tracked only in
-[Known Extraction Divergences](../KNOWN_DIVERGENCES.md).
