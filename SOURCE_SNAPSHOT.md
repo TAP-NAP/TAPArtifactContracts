@@ -14,12 +14,15 @@ permanent contract authority.
   documentation changes were a documentation-only working tree on top of this
   revision. Their eventual adoption commits are tracked in the source
   repository's Board rather than retroactively changing this evidence snapshot.
-- Primary sources: `Docs/ProductContract.md`,
-  `Docs/LivePhotoBrowserVerification.md`, `Docs/TAPVideoFormatContract.md`,
-  `Docs/AppAttest/`, CameraCapture output documentation, current Swift schema
-  types, and contract tests.
-- Shared exact vector source: the `generator` and `depthFrame` portions of
-  `Docs/Fixtures/TAPVideoManifestV1GoldenVectors.json`. TAP-0095 preserves that
+- Primary sources: [Product Contract](https://github.com/TAP-NAP/TAPCamDemo/blob/dc8807e802910ae45e44d6b292a25fa2fed2feda/Docs/ProductContract.md),
+  [Live Photo browser contract](https://github.com/TAP-NAP/TAPCamDemo/blob/dc8807e802910ae45e44d6b292a25fa2fed2feda/Docs/LivePhotoBrowserVerification.md),
+  [TAP Video contract](https://github.com/TAP-NAP/TAPCamDemo/blob/dc8807e802910ae45e44d6b292a25fa2fed2feda/Docs/TAPVideoFormatContract.md),
+  [App Attest documents](https://github.com/TAP-NAP/TAPCamDemo/tree/dc8807e802910ae45e44d6b292a25fa2fed2feda/Docs/AppAttest),
+  [CameraCapture output documentation](https://github.com/TAP-NAP/TAPCamDemo/blob/dc8807e802910ae45e44d6b292a25fa2fed2feda/TAPCamDemo/CameraCapture/Output/README.md),
+  current Swift schema types, and contract tests.
+- Shared exact vector source: the `generator` and `depthFrame` portions of the
+  [Demo composite vector](https://github.com/TAP-NAP/TAPCamDemo/blob/dc8807e802910ae45e44d6b292a25fa2fed2feda/Docs/Fixtures/TAPVideoManifestV1GoldenVectors.json).
+  TAP-0095 preserves that
   composite local fixture because the Swift test target reads it by path. Its
   older manifest object remains local decoder input and is not promoted as a
   normative manifest example.

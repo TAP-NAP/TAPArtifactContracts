@@ -84,7 +84,8 @@ change verifier code under the documentation-only task.
 ## Composite TAP Video fixture manifest drift
 
 TAPCamDemo's repository-local
-`Docs/Fixtures/TAPVideoManifestV1GoldenVectors.json` is still loaded by a Swift
+[composite TAP Video vector](https://github.com/TAP-NAP/TAPCamDemo/blob/dc8807e802910ae45e44d6b292a25fa2fed2feda/Docs/Fixtures/TAPVideoManifestV1GoldenVectors.json)
+is still loaded by a Swift
 decoder/KLV test. Its exact `depthFrame` bytes remain useful and are extracted
 as this repository's KLV/zstd golden vector. Its separate manifest object uses
 older optional/null and synchronization/software example values, so that object

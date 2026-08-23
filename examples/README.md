@@ -38,13 +38,20 @@ review MUST compare each mirror with its shared canonical file.
 
 The KLV/zstd v1 vector has three necessary executable mirror sites:
 
-- TAPCamDemo's `TAPCamDemoTests/TAPVideoManifestTests.swift` loads
-  `Docs/Fixtures/TAPVideoManifestV1GoldenVectors.json` by path. Only its
+- TAPCamDemo's
+  [`TAPVideoManifestTests.swift`](https://github.com/TAP-NAP/TAPCamDemo/blob/dc8807e802910ae45e44d6b292a25fa2fed2feda/TAPCamDemoTests/TAPVideoManifestTests.swift)
+  loads the
+  [Demo composite vector](https://github.com/TAP-NAP/TAPCamDemo/blob/dc8807e802910ae45e44d6b292a25fa2fed2feda/Docs/Fixtures/TAPVideoManifestV1GoldenVectors.json)
+  by path. Only its
   `depthFrame` member mirrors the shared exact vector; its separate manifest
   object is local decoder input.
-- TAPCamDemo's `TAPCamDemoTests/TAPVideoStreamingTests.swift` embeds the same
+- TAPCamDemo's
+  [`TAPVideoStreamingTests.swift`](https://github.com/TAP-NAP/TAPCamDemo/blob/dc8807e802910ae45e44d6b292a25fa2fed2feda/TAPCamDemoTests/TAPVideoStreamingTests.swift)
+  embeds the same
   raw, zstd1, and complete KLV bytes to prove deterministic producer encoding.
-- TAPCamVerifier's `src/video/tapVideo.test.ts` embeds the compressed bytes and
+- TAPCamVerifier's
+  [`tapVideo.test.ts`](https://github.com/TAP-NAP/TAPCamVerifier/blob/20972aff2675cab4a8bb9936bd7fba9115d21951/src/video/tapVideo.test.ts)
+  embeds the compressed bytes and
   expected decoded text to exercise its browser decoder without a runtime
   checkout of this repository.
 

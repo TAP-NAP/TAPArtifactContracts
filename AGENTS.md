@@ -19,8 +19,8 @@ shared by TAPCam producers and TAP artifact verifiers.
 
 For the TAP-0094 bootstrap, resolve disagreements in this order:
 
-1. `TAPCamDemo/Docs/ProductContract.md`.
-2. Approved TAP-0094 scope in `TAPCamDemo/Docs/ProjectBoard.md`.
+1. [TAPCamDemo Product Contract](https://github.com/TAP-NAP/TAPCamDemo/blob/main/Docs/ProductContract.md).
+2. [Approved TAP-0094 scope](https://github.com/TAP-NAP/TAPCamDemo/blob/main/Docs/ProjectBoard.md#tap-0094--establish-a-documentation-only-artifact-contract-repository).
 3. Current specialized format and security contracts.
 4. Current producer and verifier implementations and tests.
 5. Historical documents and Git history.
