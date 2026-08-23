@@ -1,0 +1,224 @@
+{
+  "schema": {
+    "id": "urn:tapnap:tapcam:still-photo-manifest:v1",
+    "version": 1,
+    "mediaType": "application/vnd.tapnap.still-photo-manifest+json;version=1",
+    "xmpNamespaceURI": "urn:tapnap:tapcam:depth:1.0",
+    "xmpPrefix": "tapdepth",
+    "xmpManifestPath": "tapdepth:Manifest"
+  },
+  "payload": {
+    "id": "00000000-0000-4000-8000-000000000001",
+    "capturedAt": "2030-01-02T03:04:05.678Z",
+    "sessionMode": "singleCam",
+    "pairingMode": "rgbWithApplePairedDepth",
+    "alignmentStatus": "sameCapturePipeline",
+    "sourceAPIs": {
+      "photo": "AVCapturePhotoOutput / AVCapturePhoto",
+      "depth": "AVCapturePhoto.depthData / AVDepthData",
+      "camera": "AVCaptureDevice / AVCaptureDevice.Format",
+      "location": "CLLocationManager.requestLocation / CLLocation"
+    },
+    "capture": {
+      "resolvedSettingsUniqueID": 101,
+      "requestedCodec": "hvc1",
+      "depthDataDeliveryEnabled": true,
+      "embedsDepthDataInPhoto": true,
+      "depthDataFiltered": true,
+      "depthAvailability": "available",
+      "photoQualityPrioritization": "quality"
+    },
+    "rgbSource": {
+      "id": "synthetic-rgb-source",
+      "displayName": "Synthetic Wide Source",
+      "deviceType": "AVCaptureDeviceTypeBuiltInLiDARDepthCamera",
+      "deviceName": "Synthetic Camera",
+      "position": "back",
+      "sourceKind": "depthVirtual",
+      "requestedReferenceZoomFactor": 1
+    },
+    "depthSource": {
+      "selectionMode": "auto",
+      "requestedDepthSourceID": "lidarDepth",
+      "requestedDepthSourceDisplayName": "Synthetic LiDAR Depth",
+      "requestedDepthSourceKind": "lidarDepth",
+      "compatibilityStatus": "compatible",
+      "resolvedDeviceID": "synthetic-device-id",
+      "resolvedDeviceType": "AVCaptureDeviceTypeBuiltInLiDARDepthCamera",
+      "resolvedDeviceName": "Synthetic Camera"
+    },
+    "pairing": {
+      "mode": "rgbWithApplePairedDepth",
+      "status": "compatible",
+      "requiresMultiCam": false,
+      "releaseAllowed": true,
+      "alignmentStatus": "sameCapturePipeline"
+    },
+    "zoom": {
+      "requestedZoomID": "zoom-1x",
+      "requestedZoomFactor": 1,
+      "actualVideoZoomFactor": 1,
+      "depthSafeRanges": [
+        {
+          "lowerBound": 1,
+          "upperBound": 2
+        }
+      ],
+      "isContinuous": true,
+      "isDiscrete": false
+    },
+    "crop": {
+      "mode": "previewOnly",
+      "cropRectNormalized": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      },
+      "destructiveFinalCropApplied": false,
+      "sourceAPI": "AVCaptureVideoPreviewLayer.metadataOutputRectConverted(fromLayerRect:)"
+    },
+    "resolvedSession": {
+      "mode": "singleCam",
+      "resolvedCaptureDeviceID": "synthetic-device-id",
+      "resolvedCaptureDeviceType": "AVCaptureDeviceTypeBuiltInLiDARDepthCamera",
+      "resolvedCaptureDeviceName": "Synthetic Camera",
+      "activePrimaryConstituentDeviceType": "AVCaptureDeviceTypeBuiltInWideAngleCamera",
+      "activePrimaryConstituentDeviceName": "Synthetic Wide Constituent"
+    },
+    "selectedDepthCamera": {
+      "id": "lidarDepth",
+      "displayName": "Synthetic LiDAR Depth",
+      "deviceType": "AVCaptureDeviceTypeBuiltInLiDARDepthCamera",
+      "deviceName": "Synthetic Camera",
+      "position": "back"
+    },
+    "selectedZoom": {
+      "id": "zoom-1x",
+      "displayName": "1x",
+      "zoomFactor": 1
+    },
+    "photoLens": {
+      "requestedLensID": "synthetic-rgb-source",
+      "requestedDisplayName": "Synthetic Wide Source",
+      "requestedFocalLengthLabel": "24mm",
+      "labelSource": "syntheticFixture+releaseRawVideoZoomFactor",
+      "requestedZoomFactor": 1,
+      "requestedReferenceZoomFactor": 1,
+      "requestedEquivalentFocalLength35mmMillimeters": 24,
+      "position": "back",
+      "resolvedCaptureDeviceType": "AVCaptureDeviceTypeBuiltInLiDARDepthCamera",
+      "resolvedCaptureDeviceName": "Synthetic Camera",
+      "resolvedActivePrimaryConstituentDeviceType": "AVCaptureDeviceTypeBuiltInWideAngleCamera",
+      "resolvedActivePrimaryConstituentDeviceName": "Synthetic Wide Constituent"
+    },
+    "depthBackend": {
+      "selectionMode": "auto",
+      "requestedBackendID": "lidarDepth",
+      "requestedBackendDisplayName": "Synthetic LiDAR Depth",
+      "resolvedBackendID": "lidarDepth",
+      "resolvedBackendDisplayName": "Synthetic LiDAR Depth",
+      "resolvedCaptureDeviceType": "AVCaptureDeviceTypeBuiltInLiDARDepthCamera",
+      "resolvedCaptureDeviceName": "Synthetic Camera",
+      "actualVideoZoomFactor": 1
+    },
+    "camera": {
+      "localizedName": "Synthetic Camera",
+      "uniqueID": "synthetic-device-id",
+      "modelID": "synthetic-model",
+      "deviceType": "AVCaptureDeviceTypeBuiltInLiDARDepthCamera",
+      "position": "back",
+      "activePrimaryConstituentDeviceType": "AVCaptureDeviceTypeBuiltInWideAngleCamera",
+      "activePrimaryConstituentDeviceName": "Synthetic Wide Constituent",
+      "activeFormat": {
+        "mediaSubType": "420v",
+        "width": 1600,
+        "height": 1200,
+        "maxFrameRate": 30
+      },
+      "activeDepthFormat": {
+        "mediaSubType": "hdep",
+        "width": 160,
+        "height": 120,
+        "maxFrameRate": 30
+      },
+      "lensPosition": 0.5,
+      "minimumFocusDistanceMillimeters": 100,
+      "nominalFocalLengthIn35mmFilmMillimeters": 24
+    },
+    "photo": {
+      "width": 1600,
+      "height": 1200,
+      "orientation": "cgImagePropertyOrientation:1",
+      "metadataKeys": [
+        "{Exif}",
+        "{TIFF}"
+      ]
+    },
+    "depth": {
+      "availability": "available",
+      "auxiliaryDataKind": "depth",
+      "depthDataType": "hdep",
+      "metricUnit": "meters",
+      "conversionPath": "nativeDepthMeters",
+      "width": 160,
+      "height": 120,
+      "pixelFormat": "hdep",
+      "orientation": "appleAuxiliaryDepthNative",
+      "accuracy": "absolute",
+      "quality": "high",
+      "isFiltered": true,
+      "source": {
+        "captureDeviceType": "AVCaptureDeviceTypeBuiltInLiDARDepthCamera",
+        "captureDeviceName": "Synthetic Camera",
+        "sensingMethod": "lidarDepthCamera",
+        "lidarParticipation": "explicit"
+      },
+      "cameraCalibration": {
+        "intrinsicMatrixReferenceWidth": 160,
+        "intrinsicMatrixReferenceHeight": 120,
+        "pixelSizeMillimeters": 0.002,
+        "lensDistortionLookupTablePresent": false,
+        "inverseLensDistortionLookupTablePresent": false,
+        "lensDistortionCenterX": 80,
+        "lensDistortionCenterY": 60,
+        "intrinsicMatrix": [
+          120,
+          0,
+          0,
+          0,
+          120,
+          0,
+          80,
+          60,
+          1
+        ],
+        "extrinsicMatrix": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0
+        ]
+      }
+    },
+    "alignment": {
+      "depthToImage": "appleAuxiliaryDepthNative"
+    },
+    "location": null,
+    "software": {
+      "appName": "Synthetic TAPCam",
+      "bundleIdentifier": "example.invalid.tapcam.synthetic",
+      "version": "0.0-synthetic",
+      "build": "0"
+    }
+  },
+  "proofs": []
+}

@@ -1,0 +1,188 @@
+{
+  "schema": {
+    "id": "urn:tapnap:tapcam:video-manifest:v1",
+    "version": 1,
+    "mediaType": "application/vnd.tapnap.video-manifest+json;version=1"
+  },
+  "payload": {
+    "id": "synthetic-video-capture-v1",
+    "packageID": "00000000-0000-0000-0000-000000000001",
+    "capturedAt": "2026-01-01T00:00:00.000Z",
+    "selectedCameraPlan": {
+      "deviceType": "synthetic",
+      "localizedName": "Synthetic Camera",
+      "position": "back",
+      "requestedFocalLengthLabel": "synthetic-wide",
+      "resolvedFocalLengthLabel": "synthetic-wide",
+      "resolvedZoomFactor": 1,
+      "depthCapable": true
+    },
+    "container": {
+      "fileType": "mp4",
+      "mediaType": "video/mp4",
+      "durationSeconds": 1,
+      "timeScale": 600,
+      "trackCount": 2
+    },
+    "rgbTrack": {
+      "trackID": 1,
+      "codec": "avc1",
+      "width": 4,
+      "height": 4,
+      "durationSeconds": 1,
+      "timeScale": 600,
+      "nominalFrameRate": 30,
+      "frameCount": 30,
+      "transform": "rotation:0"
+    },
+    "audioTrack": {
+      "status": "notCaptured",
+      "trackID": null,
+      "codec": null,
+      "durationSeconds": null,
+      "timeScale": null,
+      "sampleRate": null,
+      "channelCount": null
+    },
+    "depthCoverage": {
+      "trackID": 2,
+      "trackCodec": "mebx",
+      "trackDurationSeconds": 1,
+      "trackTimeScale": 600,
+      "sampleCount": 1,
+      "deliveredSampleCount": 1,
+      "outputDropCount": 0,
+      "encodingDropCount": 0,
+      "metadataDropCount": 0,
+      "gapCount": 0,
+      "gaps": [],
+      "format": {
+        "kind": "depth",
+        "pixelFormat": "hdep",
+        "width": 2,
+        "height": 2,
+        "packedRowStride": 4,
+        "sourceRowStride": 4,
+        "bytesPerSample": 2,
+        "byteOrder": "little-endian",
+        "uncompressedFrameByteCount": 8,
+        "compressionPolicy": "per-frame:zstd1|raw"
+      }
+    },
+    "spatialRegistration": {
+      "status": "registered",
+      "mapping": "urn:tapnap:tapcam:video-depth-registration:avdepthdata-yuv-warp:v1",
+      "rgbReferenceDimensions": {
+        "width": 4,
+        "height": 4
+      },
+      "depthReferenceDimensions": {
+        "width": 2,
+        "height": 2
+      },
+      "rgbCleanAperture": {
+        "x": 0,
+        "y": 0,
+        "width": 4,
+        "height": 4
+      },
+      "recordedTransform": "rotation:0;not-mirrored",
+      "calibrationTable": [
+        {
+          "intrinsicMatrix": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            1,
+            1,
+            1
+          ],
+          "intrinsicMatrixReferenceDimensions": {
+            "width": 2,
+            "height": 2
+          },
+          "extrinsicMatrix": [
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0
+          ],
+          "pixelSizeMillimeters": 0.001,
+          "lensDistortionCenter": {
+            "x": 1,
+            "y": 1
+          }
+        }
+      ],
+      "calibrationCoverage": {
+        "indexedSampleCount": 1,
+        "missingCalibrationSampleCount": 0,
+        "overflowUnindexedSampleCount": 0,
+        "tableOverflowed": false
+      },
+      "descriptor": {
+        "schema": "urn:tapnap:tapcam:video-depth-registration:avdepthdata-yuv-warp:v1",
+        "version": 1,
+        "model": "avdepthdata-warped-to-synchronized-rgb-pixel-centers",
+        "alignedRGBCodedDimensions": {
+          "width": 4,
+          "height": 4
+        },
+        "encodedRGBCodedDimensions": {
+          "width": 4,
+          "height": 4
+        },
+        "depthDimensions": {
+          "width": 2,
+          "height": 2
+        },
+        "depthToAlignedRGBPixelCenterAffine": [
+          2,
+          0,
+          0.5,
+          0,
+          2,
+          0.5
+        ],
+        "connectionTransform": "rotation:0;not-mirrored",
+        "isEncodedHorizontallyMirrored": false,
+        "rgbCleanAperture": {
+          "x": 0,
+          "y": 0,
+          "width": 4,
+          "height": 4
+        },
+        "videoStabilizationMode": "off"
+      }
+    },
+    "synchronization": {
+      "timing": "capture-output-presentation-timestamps",
+      "rgbToDepthMapping": "independent-timed-metadata",
+      "maxObservedDeltaSeconds": 0,
+      "maxObservedDepthIntervalSeconds": 0.03333333333333333,
+      "nominalDepthIntervalSeconds": 0.03333333333333333
+    },
+    "stop": {
+      "reason": "userStop",
+      "recordedDurationSeconds": 1
+    },
+    "software": {
+      "appIdentifier": "example.invalid.tapcam.synthetic",
+      "appVersion": "1",
+      "buildNumber": "1",
+      "schemaWriter": "TAPCamDemo.TAPVideoManifestEncoder"
+    }
+  },
+  "proofs": []
+}

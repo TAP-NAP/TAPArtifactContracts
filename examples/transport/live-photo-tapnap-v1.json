@@ -1,0 +1,20 @@
+{
+  "schemaID": "urn:tapnap:tapcam:verification-export:v1",
+  "version": 1,
+  "packageKind": "livePhotoPackage",
+  "resources": [
+    {
+      "role": "primaryPhoto",
+      "filename": "primary-photo.heic",
+      "mediaType": "public.heic"
+    },
+    {
+      "role": "pairedLivePhotoVideo",
+      "filename": "paired-video.mov",
+      "mediaType": "com.apple.quicktime-movie"
+    }
+  ],
+  "warningLabels": [],
+  "warnings": [],
+  "trustBoundary": "This sidecar is not signed. Verify primary photo and paired video bytes against the TAP signature embedded in the photo."
+}

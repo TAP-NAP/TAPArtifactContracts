@@ -1,0 +1,126 @@
+# Live Photo Manifest v1
+
+Task: `TAP-0094`. Source boundary: [SOURCE_SNAPSHOT.md](../SOURCE_SNAPSHOT.md).
+
+This is a distinct manifest family for one TAP Live Photo: a primary HEIC/JPEG
+photo containing the manifest, auxiliary still-photo depth when available, and
+the proof slot, plus one byte-preserved paired MOV. It is not a Still Photo alias
+and it does not claim per-frame MOV depth.
+
+The accepted synthetic shape example is
+[`examples/manifests/live-photo-v1.json`](../examples/manifests/live-photo-v1.json).
+Its expected manifest-stage decision is **Accept**: the exact Live Photo family,
+required `livePhoto` declaration, explicit `location: null`, and `proofs: []`
+are present. It is not a complete signed-media or canonical-byte golden vector;
+full verification still requires the primary photo, proof slot, and matching MOV.
+
+## Family identity
+
+The following values MUST match exactly.
+
+| Field | Required JSON value |
+| --- | --- |
+| `schema.id` | `urn:tapnap:tapcam:live-photo-manifest:v1` |
+| `schema.version` | integer `1` |
+| `schema.mediaType` | `application/vnd.tapnap.live-photo-manifest+json;version=1` |
+| `schema.xmpNamespaceURI` | `urn:tapnap:tapcam:depth:1.0` |
+| `schema.xmpPrefix` | `tapdepth` |
+| `schema.xmpManifestPath` | `tapdepth:Manifest` |
+| Canonical payload media type | `application/vnd.tapnap.live-photo-manifest.payload+json;version=1` |
+
+The top-level members `schema`, `payload`, and `proofs` are required.
+`proofs` MUST be `[]`; the actual proof remains in the primary photo's fixed
+proof slot.
+
+## Payload composition
+
+Live Photo v1 uses every common photo-payload field, type, unit, coordinate
+system, enum vocabulary, omission rule, and privacy boundary defined in
+[Still Photo Manifest v1](still-photo-v1.md#payload-root), with two normative
+differences only:
+
+1. the exact Live Photo `schema` and canonical payload media type above replace
+   their Still Photo counterparts; and
+2. `payload.livePhoto` is required and has the object below rather than being
+   omitted.
+
+This structural reuse does not merge the two families. A consumer MUST route on
+the complete manifest and content-binding family pair and MUST reject a Live
+Photo payload under the Still Photo family or a Still payload under the Live
+Photo family.
+
+## `payload.livePhoto`
+
+| Field | JSON type | Presence | Meaning, unit, vocabulary |
+| --- | --- | --- | --- |
+| `presence` | string enum | Required | Exact value `paired-video`. |
+| `pairedVideoFilename` | string | Required | Exact value `paired-video.mov`. This names the required logical resource; it is not a hash. |
+| `durationSeconds` | number | Required | Non-negative MOV duration in seconds, clamped to at least zero by the producer. |
+| `photoDisplayTimeSeconds` | number | Required | Non-negative still-photo display time within the MOV timeline, in seconds, clamped to at least zero. |
+| `width` | integer | Required | MOV encoded width in pixels, sourced from resolved Live Photo movie dimensions. |
+| `height` | integer | Required | MOV encoded height in pixels. |
+| `videoCodec` | string | Optional, omitted | Selected `AVVideoCodecType.rawValue`, normally `hvc1`, then `avc1`, then another platform-supported value; omitted if no codec value was selected. |
+| `audio` | string enum | Required | `captured` or `not-captured`. This is the capture-request/result fact; it is not an audio-track decoder result. |
+
+## Paired-resource binding
+
+`payload.livePhoto` describes the MOV but MUST NOT contain its digest. The full
+MOV hash is stored only in
+`proof.value.contentDigest.signedResources[role = "pairedLivePhotoVideo"]`.
+The Live Photo content-binding family MUST be
+`urn:tapnap:tapcam:live-photo-content-binding:v1` and MUST contain exactly these
+resources in producer order:
+
+1. `primaryPhoto`: complete primary HEIC/JPEG bytes excluding the entire proof
+   slot container range;
+2. `tapDepthManifestPayload`: canonical bytes of this complete Live Photo
+   `payload` object; and
+3. `pairedLivePhotoVideo`: complete, unmodified `paired-video.mov` bytes.
+
+The paired MOV descriptor uses media type `com.apple.quicktime-movie`, kind
+`format-native-full-file`, algorithm `SHA-256`, and binding `full-file`. The
+primary photo remains the only depth resource. Nothing in this family describes
+or binds per-frame MOV depth.
+
+See [Capture Binding and Proof v1](../bindings/capture-binding-and-proof-v1.md)
+for the complete object fields, canonicalization, hashing, proof value, and App
+Attest relationship.
+
+## Input and failure rules
+
+- A complete Live Photo verification input MUST contain one primary photo and
+  the MOV named by `pairedVideoFilename`.
+- The Apple Photos resource pairing is `.photo` plus `.pairedVideo`; package
+  filenames are routing inputs only and never replace the embedded hash chain.
+- If capture requested Live Photo but no movie complement was produced, TAPCam
+  emits the Still Photo manifest and content-binding families instead. It MUST
+  NOT emit a partial Live Photo manifest.
+- If a verifier receives this family without the MOV, it may report the bound
+  primary-photo checks separately, but it MUST report the complete Live Photo
+  resource set as missing/incomplete.
+- A MOV hash mismatch fails the Live Photo paired-resource check even when the
+  primary photo still matches its signed bytes.
+- Presentation or adjusted Photos resources are not substitutes for the
+  original `.photo` and `.pairedVideo` bytes.
+
+## Required consistency checks
+
+A conforming verifier MUST:
+
+1. require the exact Live Photo family object, non-null `payload.livePhoto`,
+   exact `presence`, and exact `pairedVideoFilename`;
+2. require `proofs: []`;
+3. apply every common Still/Live photo payload check, including depth
+   availability and auxiliary-data presence;
+4. require the Live Photo content-binding family and all three named resource
+   descriptors;
+5. recompute the paired MOV SHA-256 over the full file without video decoding;
+6. compare the full canonical content digest and signing binding before sending
+   only the App Attest verification request fields to the backend.
+
+## Extraction note
+
+The current producer and specialized Live Photo contract agree that the MOV hash
+does not belong in `payload.livePhoto`. Adding it there, adding per-frame MOV
+depth, or reusing the Still Photo family would be a wire-format change outside
+`TAP-0094`.

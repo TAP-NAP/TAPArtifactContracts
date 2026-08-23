@@ -1,0 +1,54 @@
+# Versioning and Compatibility
+
+## Independent families
+
+Every public-format and security-schema family owns its own version. The fact
+that several current families end in `v1` does not make them interchangeable.
+
+A consumer MUST route by the complete family identifier. It MUST reject an
+unknown identifier, a structurally different family, or a manifest/binding pair
+whose families do not match. It MUST NOT guess a family from similar fields.
+
+Current families include, but are not limited to:
+
+- Still Photo manifest v1
+- Live Photo manifest v1
+- TAP Video manifest v1
+- Still Photo content-binding v1
+- Live Photo content-binding v1
+- TAP Video content-binding v1
+- App Attest capture-signing v1
+- TAP Video depth-registration v1
+- TAP Video KLV frame v1
+- `.tapnap` verification-export v1
+
+## Contract-repository releases
+
+A repository tag identifies one reviewed publication of these documents. It is
+not a global wire-format version. A tag may document several independent v1
+families at once.
+
+## Change classification
+
+The following require an explicit family revision unless the existing contract
+already permits them:
+
+- adding, removing, renaming, or changing a required field;
+- changing `null` versus omitted behavior;
+- changing an enumeration, unit, coordinate system, matrix order, or time base;
+- changing canonical JSON bytes, hash input, resource ordering, or encoding;
+- changing proof-slot size, binary layout, container location, or excluded
+  byte range;
+- changing which resources are bound or which schema-family combinations are
+  accepted.
+
+Editorial clarification is non-breaking only when it does not change any
+producer byte or consumer decision. If an apparent clarification reveals that
+producer and verifier differ, document the discrepancy and keep the current
+source authority in place until the owner approves a resolution.
+
+## Current pre-release policy
+
+Superseded development identifiers and cross-family combinations are
+unsupported. Consumers fail closed instead of silently accepting a legacy alias
+or coercing one v1 family into another.
