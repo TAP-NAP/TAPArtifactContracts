@@ -171,9 +171,30 @@ MUST remain empty.
 | `payloadLength` | integer | Exact value `61440` |
 | `padding` | string | `zero-filled-after-envelope` |
 
-The values MUST equal the slot actually located in the received file. Binary
-layout is defined in
-[Photo Containers v1](../containers/photo-containers-v1.md#fixed-proof-slot-payload).
+The values MUST equal the slot actually located in the received file. Every
+HEIC, JPEG, and TAP Video slot carries this same 61,440-byte payload:
+
+| Payload-relative byte range | Size | Encoding and meaning |
+| --- | ---: | --- |
+| `0..<20` | 20 | ASCII `TAPCAM-PROOF-SLOT-V1` |
+| `20..<24` | 4 | Producer-reserved zero bytes |
+| `24..<28` | 4 | Unsigned 32-bit big-endian version, exact value `1` |
+| `28..<32` | 4 | Unsigned 32-bit big-endian proof-envelope byte length `N` |
+| `32..<(32+N)` | `N` | Canonical proof-envelope JSON bytes |
+| `(32+N)..<61440` | remainder | Zero padding |
+
+The maximum envelope length is `61408` bytes. An unsigned pending artifact has
+`N == 0`; a signed artifact requires `N > 0`. The producer MUST zero the four
+reserved bytes and every byte after the envelope. A reader MUST reject an
+incorrect payload size, magic, version, envelope length or JSON, or non-zero
+trailing padding, as well as a missing or duplicate slot. Current reader
+handling of the reserved bytes is recorded in
+[Known Extraction Divergences](../KNOWN_DIVERGENCES.md#container-source-and-reader-gaps).
+
+The payload alone is not the `assetHash` excluded range. That range is the
+complete enclosing UUID box or JPEG APP11 segment defined by
+[Photo Containers v1](../containers/photo-containers-v1.md) or
+[TAP Video MP4 Container and Timed Depth v1](../containers/tap-video-container-v1.md).
 
 ### `depthResource`
 
@@ -411,21 +432,5 @@ or backend counter/replay-policy failure MUST fail at the backend gate. A
 transport label, decoded-pixel match, or backend-valid result alone MUST NOT
 upgrade either failure to valid.
 
-## Extraction notes
-
-- The current producer supports no-depth Still and Live photos by emitting the
-  `unavailable` `depthResource` row above. The current TAPCamVerifier Rust
-  reconstruction observed in the extraction snapshot still constructs only the
-  `available` row. This producer/consumer discrepancy is recorded rather than
-  resolved here; the Product Contract and producer remain the authority for the
-  current no-depth capability until a separately approved verifier correction
-  is completed.
-- Current producer and verifier canonicalization agree for exercised fixtures,
-  but this extraction found no complete Still Photo or Live Photo canonical
-  golden-byte vector covering high-precision numbers, Unicode, omission, full
-  content digest, and signing binding. This document records the current encoder
-  profile; adding immutable cross-language vectors is still needed before this
-  repository can prove all edge-byte behavior independently.
-- The current verifier base64url decoder accepts padded input as a permissive
-  decode path. The producer emits unpadded base64url; permissive input acceptance
-  is not a producer wire requirement.
+Known implementation and vector-coverage gaps are tracked only in
+[Known Extraction Divergences](../KNOWN_DIVERGENCES.md).

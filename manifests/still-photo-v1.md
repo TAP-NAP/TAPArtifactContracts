@@ -352,17 +352,5 @@ A conforming Still Photo verifier MUST, before treating the manifest as bound:
 6. require the content-binding family
    `urn:tapnap:tapcam:still-photo-content-binding:v1`.
 
-## Extraction notes
-
-- The current Swift producer always emits `capture.depthAvailability` and
-  `depth.availability`, but its decoders accept either missing member and default
-  it to `available`. That compatibility fallback conflicts with the current
-  pre-release fail-closed policy and is not promoted into this v1 producer
-  contract. Resolving the reader behavior requires a separate approved task.
-- A stale source comment says proof data belongs in `manifest.proofs`; the
-  signed-export validator instead requires that array to be empty and stores the
-  proof in the fixed slot. This contract follows the current specialized
-  contract and executable validation path; the contradictory comment remains a
-  source cleanup item.
-- A stale schema comment says every artifact is HEIC. Current product and code
-  support both reviewed HEIC and JPEG photo-depth containers.
+Known implementation differences affecting these requirements are tracked only
+in [Known Extraction Divergences](../KNOWN_DIVERGENCES.md).

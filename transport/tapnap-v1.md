@@ -171,17 +171,5 @@ Only the root sidecar and supported photo/MOV candidates need to be
 materialized. Paths MUST be resolved as archive entries, not written to
 arbitrary filesystem locations.
 
-## Extraction note: complete producer contract versus loose parsing
-
-The current Swift producer always writes the complete seven-field sidecar,
-including every resource `mediaType`, both warning arrays, and the fixed
-`trustBoundary` string. The current TypeScript Verifier presently validates the
-exact sidecar family, requires string `role` and `filename`, rejects duplicate
-known roles, and resolves supported filename suffixes, but it does not yet
-enforce every producer field, `packageKind`/resource-set relationship,
-`mediaType`, unknown role, or trust-boundary rule above.
-
-That narrower parser is an implementation divergence, not a broader v1
-contract. It MUST NOT be used to justify incomplete producers or to treat
-sidecar metadata as signed. See
-[`../KNOWN_DIVERGENCES.md`](../KNOWN_DIVERGENCES.md).
+Current verifier coverage gaps are tracked only in
+[Known Extraction Divergences](../KNOWN_DIVERGENCES.md).

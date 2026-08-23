@@ -16,14 +16,16 @@ It answers three questions:
 
 - [Contract index](CONTRACTS.md)
 - [Versioning and compatibility](VERSIONING.md)
-- Still Photo, Live Photo, and TAP Video manifest field contracts
-- Content-binding, signing-binding, proof-envelope, and proof-slot contracts
-- HEIC/JPEG XMP and MP4/KLV container conventions
-- `.tapnap` routing-sidecar conventions
-- Synthetic positive and negative JSON examples plus exact shared golden vectors
+- [Still Photo](manifests/still-photo-v1.md),
+  [Live Photo](manifests/live-photo-v1.md), and
+  [TAP Video](manifests/tap-video-v1.md) manifest field contracts
+- [Content-binding, signing-binding, proof-envelope, and proof-slot contracts](bindings/capture-binding-and-proof-v1.md)
+- [HEIC/JPEG XMP](containers/photo-containers-v1.md) and
+  [MP4/KLV](containers/tap-video-container-v1.md) container conventions
+- [`.tapnap` routing-sidecar conventions](transport/tapnap-v1.md)
+- [Synthetic positive and negative JSON examples plus exact shared golden vectors](examples/README.md)
 - [Extraction source snapshot](SOURCE_SNAPSHOT.md)
 - [Known extraction divergences](KNOWN_DIVERGENCES.md)
-- [Producer and verifier adoption boundary](ADOPTION.md)
 
 ## What does not live here
 
@@ -41,6 +43,8 @@ The actual per-capture manifest also does not move here:
 - App Attest proof envelopes remain in the artifact's fixed proof slot.
 
 This repository records the agreement that those artifacts implement.
+Consumers adopt it by reviewed revision, not through a submodule, package
+dependency, generated binding, schema loader, or runtime network request.
 
 ## Consumer relationship
 
@@ -53,15 +57,5 @@ TAPCam mobile producer  --->  artifact  --->  TAP verifier
 ```
 
 Producer and verifier repositories keep their own implementations. They refer
-to the same released contract revision and report any implementation mismatch
-without silently redefining this contract.
-
-## Current scope
-
-The initial extraction is tracked as `TAP-0094` in TAPCamDemo. `TAP-0095`
-extends the same documentation boundary with the explicit producer-signing,
-verifier-reconstruction, App Attest verification, hash-participation, and
-example-ownership rules, then removes duplicate source-repository prose. Both
-tasks preserve the current, distinct v1 bytes and behavior. See
-[SOURCE_SNAPSHOT.md](SOURCE_SNAPSHOT.md) for the source revisions and known
-working-tree qualifications used during extraction.
+to the same reviewed contract revision and MUST report any implementation
+mismatch without silently redefining this contract.

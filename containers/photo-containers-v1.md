@@ -64,28 +64,9 @@ TAPDepthHEIC/1; metadata=xmp:tapdepth:Manifest
 It is a discovery hint only. It is not the manifest, a family identifier, a
 content hash, or proof evidence.
 
-## Fixed proof-slot payload
-
-Both container forms carry the same fixed 61,440-byte payload:
-
-| Payload-relative byte range | Size | Encoding and meaning |
-| --- | ---: | --- |
-| `0..<20` | 20 | ASCII `TAPCAM-PROOF-SLOT-V1` |
-| `20..<24` | 4 | Producer-reserved zero bytes |
-| `24..<28` | 4 | Unsigned 32-bit big-endian version, exact value `1` |
-| `28..<32` | 4 | Unsigned 32-bit big-endian proof-envelope byte length |
-| `32..<(32+length)` | `length` | Canonical proof JSON envelope bytes |
-| `(32+length)..<61440` | remainder | Zero padding |
-
-Maximum envelope length is `61440 - 32 = 61408` bytes. An unsigned pending
-artifact has length `0`; reading a signed proof from such a slot reports a
-missing envelope. A signed artifact requires length greater than zero. Bytes
-after a non-empty envelope MUST all be zero. The producer initializes the four
-reserved bytes to zero; current readers identify the header from magic and
-version and do not independently reject non-zero reserved bytes.
-
-The hash exclusion is the complete enclosing UUID box or APP11 segment. The
-61,440-byte payload alone is not the excluded range.
+Both wrappers carry the common
+[61,440-byte proof-slot payload](../bindings/capture-binding-and-proof-v1.md#proofslot).
+This document defines only the enclosing photo-container ranges.
 
 ## HEIC/BMFF slot
 
@@ -139,23 +120,13 @@ range for `assetHash.excludedRanges` and `proofSlot`. It MUST reject a malformed
 segment, zero matches, or multiple matches rather than treating an arbitrary
 APP11 segment as TAP evidence.
 
-## Manifest, slot, and hash relationship
+## Binding relationship
 
-```text
-primary HEIC/JPEG bytes
-  contains XMP manifest JSON
-  contains exactly one fixed proof-slot container
-
-canonical(manifest.payload) -> metadataHash
-photo bytes excluding full slot container -> assetHash
-located slot offsets -> proofSlot descriptor
-proof envelope in slot -> contentDigest + signingBinding + assertionObject
-```
-
-XMP is not excluded from the photo hash: it is covered once as part of the
-format-native photo bytes and its payload is additionally named by
-`metadataHash`. The proof slot is excluded so its envelope can be written after
-hashing without changing `assetHash`.
+The complete hash and proof relationship is defined in
+[Capture Binding and Proof v1](../bindings/capture-binding-and-proof-v1.md).
+For these wrappers, XMP remains inside the format-native `assetHash` while its
+payload is additionally named by `metadataHash`; only the complete slot wrapper
+is excluded.
 
 ## Container validation
 
@@ -172,15 +143,5 @@ A conforming verifier MUST:
 - for Live Photo, treat `paired-video.mov` as a separate full-file signed
   resource rather than a nested photo-container region.
 
-## Extraction notes
-
-- The EXIF pointer contains the historical name `TAPDepthHEIC/1` even in JPEG
-  output. This document preserves that current wire string and does not rename
-  it; changing it requires a separate approved format task.
-- The HEIC schema source comment predates first-class JPEG output. The container
-  implementation and Product Contract make HEIC and JPEG separate reviewed
-  choices, with the same XMP property and payload but different proof-slot
-  containers.
-- Reserved payload bytes `20..<24` are zeroed by producer construction but are
-  not checked by current Swift or JS readers. This extraction records both facts
-  and does not introduce a stricter reader rule under the existing v1 family.
+Known source-comment and reader differences are tracked only in
+[Known Extraction Divergences](../KNOWN_DIVERGENCES.md).

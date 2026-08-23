@@ -12,13 +12,22 @@ instead require the array to be present and empty; the proof envelope lives in
 the fixed proof slot. This repository documents the latter current wire rule.
 The stale source comment remains an implementation-repository cleanup item.
 
-## HEIC-named EXIF pointer on JPEG
+## Container source and reader gaps
 
 The non-authoritative EXIF `UserComment` literal is
 `TAPDepthHEIC/1; metadata=xmp:tapdepth:Manifest`, including on current JPEG
 output. The authoritative manifest is XMP `tapdepth:Manifest`. This repository
 records the existing literal without renaming it; a rename would be a separate
 format decision.
+
+A stale HEIC schema comment predates first-class JPEG output. The current
+product and implementation support separate reviewed HEIC and JPEG wrappers
+with the same XMP property and payload.
+
+The producer zeros proof-slot payload bytes `20..<24`. Current Swift and
+JavaScript readers identify the header from magic and version but do not
+independently reject non-zero values in that reserved range. This extraction
+does not introduce a stricter v1 consumer rule.
 
 ## Missing photo availability fields
 
@@ -36,6 +45,18 @@ current TypeScript verifier parser performs strict family/proof routing but only
 semantically validates a subset of those fields before retaining the rest as
 untyped data. This repository documents the complete producer contract; it does
 not claim the current verifier already enforces every field-level rule.
+
+## `.tapnap` semantic validation breadth
+
+The current Swift producer writes the complete seven-field sidecar, including
+every resource `mediaType`, both warning arrays, and the fixed `trustBoundary`
+string. The current TypeScript verifier validates the exact family, requires
+string `role` and `filename`, rejects duplicate known roles, and resolves
+supported suffixes, but does not yet enforce every producer field,
+`packageKind`/resource-set relationship, `mediaType`, unknown role, or
+trust-boundary rule. That narrower parser is an implementation divergence, not
+a broader v1 contract. It MUST NOT justify incomplete producers or treating
+sidecar metadata as signed.
 
 ## TAP Video `mebx` local-key mapping
 
@@ -81,6 +102,14 @@ sorted-object encoder. The contract records current observable rules and
 examples but does not rename them as RFC 8785. Additional byte examples are
 needed before making broader claims about every floating-point or Unicode edge
 case.
+
+No complete Still or Live Photo golden-byte vector currently covers
+high-precision numbers, Unicode, omission, the full content digest, and signing
+binding across producer and verifier implementations.
+
+The current verifier base64url decoder accepts padded input as a permissive
+decode path. Producers emit unpadded base64url; permissive input acceptance is
+not a producer wire requirement.
 
 ## Verifier extraction baseline
 

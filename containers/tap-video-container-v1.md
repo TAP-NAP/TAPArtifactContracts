@@ -32,7 +32,7 @@ The file contains exactly one of each top-level BMFF `uuid` box:
 | Purpose | 16-byte user type | Payload |
 | --- | --- | --- |
 | Manifest | ASCII `TAPCAMVIDEOMANF1` | UTF-8 TAP Video manifest v1 JSON; at most 1 MiB |
-| Proof slot | ASCII `TAPCAMPROOFSLOT1` | Fixed 60 KiB proof-slot payload described below |
+| Proof slot | ASCII `TAPCAMPROOFSLOT1` | Common fixed [61,440-byte proof-slot payload](../bindings/capture-binding-and-proof-v1.md#proofslot) |
 
 A reader MUST locate these boxes as top-level boxes by the complete 16-byte
 user type. It MUST reject a missing box, a duplicate matching box, a truncated
@@ -44,46 +44,10 @@ an empty proof slot without changing existing media-table offsets. The manifest
 and all media bytes remain inside the signed asset-byte view. Only the complete
 proof-slot `uuid` box is excluded from that byte view.
 
-## Fixed proof slot v1
-
 The `TAPCAMVIDEOMANF1` box contains no proof body and manifest `proofs` MUST be
-empty. The proof envelope is stored only in the `TAPCAMPROOFSLOT1` box.
-
-The proof-slot box payload is exactly `60 * 1024` bytes (61,440 bytes). Its
-32-byte header is:
-
-```text
-offset   length   encoding       value
-0        20       ASCII          TAPCAM-PROOF-SLOT-V1
-20       4        bytes          00 00 00 00
-24       4        UInt32BE       1
-28       4        UInt32BE       proof-envelope byte length N
-32       N        UTF-8 JSON     proof envelope
-32 + N   remaining bytes         all zero
-```
-
-`N` MUST be greater than zero and MUST fit inside the payload after the
-32-byte header. Every byte after the envelope MUST be zero. The producer MUST
-zero the four reserved bytes. Current readers identify the header from magic
-and version but do not independently reject non-zero reserved bytes; this
-extraction does not silently add a stricter v1 consumer rule. A reader MUST
-reject an incorrect payload size, magic, version, length, JSON envelope, or
-padding, as well as missing or duplicate slots.
-
-The current TAP Video content-binding family is
-`urn:tapnap:tapcam:video-content-binding:v1`:
-
-```text
-assetHash    = SHA-256(all MP4 bytes in file order except exactly the complete
-                       TAPCAMPROOFSLOT1 uuid-box byte range)
-metadataHash = SHA-256(current canonical JSON bytes of manifest.payload)
-```
-
-The excluded range includes the proof box's BMFF header, 16-byte user type, and
-entire 60 KiB payload. The manifest box, MP4 metadata, RGB/audio samples, KLV
-samples, and every other file byte remain covered. Proof and signing-field
-details are defined in
-[`../bindings/capture-binding-and-proof-v1.md`](../bindings/capture-binding-and-proof-v1.md).
+empty. Its proof envelope is stored only in the proof-slot box. The exact TAP
+Video family, excluded range, hash participation, and signing fields are defined
+in [Capture Binding and Proof v1](../bindings/capture-binding-and-proof-v1.md).
 
 ## TAP timed-depth metadata track
 
@@ -218,20 +182,10 @@ signed manifest gaps. They MUST NOT fabricate KLV samples to conceal drops.
 
 ## Verification order
 
-Proof authentication and depth semantics are separate gates:
-
-1. Locate the unique boxes, parse the exact v1 family, and recompute the asset
-   and metadata bindings.
-2. Pass the local artifact-binding relationship gate: reconstruct and compare
-   `contentDigest` and `signingBinding`. This is not yet backend App Attest
-   signature verification.
-3. Only when explicitly requested, scan the actual tracks, KLV records,
-   timestamps, calibration indices, and gap coverage.
-
-Untrusted KLV data MUST NOT trigger an unbounded semantic scan before the proof
-and fixed byte binding are authenticated. A passing depth scan establishes
-container consistency, not App Attest authenticity or physical-world truth. A
-bounded viewer may start this semantic inspection after the local relationship
-gate while backend verification is pending, but MUST keep its results untrusted
-and MUST NOT issue a final authenticated verdict until the backend App Attest
-gate in the binding contract also passes.
+Apply the shared local and backend gates in
+[Capture Binding and Proof v1](../bindings/capture-binding-and-proof-v1.md).
+Untrusted KLV MUST NOT trigger an unbounded semantic scan before the local
+binding gate passes. A bounded semantic scan may then run while the backend is
+pending, but its result MUST remain untrusted and MUST NOT produce a final
+authenticated verdict until the backend gate also passes. It establishes
+container consistency, not App Attest authenticity or physical-world truth.

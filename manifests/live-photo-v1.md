@@ -64,27 +64,12 @@ Photo family.
 
 ## Paired-resource binding
 
-`payload.livePhoto` describes the MOV but MUST NOT contain its digest. The full
-MOV hash is stored only in
-`proof.value.contentDigest.signedResources[role = "pairedLivePhotoVideo"]`.
-The Live Photo content-binding family MUST be
-`urn:tapnap:tapcam:live-photo-content-binding:v1` and MUST contain exactly these
-resources in producer order:
-
-1. `primaryPhoto`: complete primary HEIC/JPEG bytes excluding the entire proof
-   slot container range;
-2. `tapDepthManifestPayload`: canonical bytes of this complete Live Photo
-   `payload` object; and
-3. `pairedLivePhotoVideo`: complete, unmodified `paired-video.mov` bytes.
-
-The paired MOV descriptor uses media type `com.apple.quicktime-movie`, kind
-`format-native-full-file`, algorithm `SHA-256`, and binding `full-file`. The
-primary photo remains the only depth resource. Nothing in this family describes
-or binds per-frame MOV depth.
-
-See [Capture Binding and Proof v1](../bindings/capture-binding-and-proof-v1.md)
-for the complete object fields, canonicalization, hashing, proof value, and App
-Attest relationship.
+`payload.livePhoto` describes the MOV but MUST NOT contain its digest. The Live
+Photo content-binding family, exact ordered resource descriptors, and full-file
+MOV hash are defined once under
+[Live Photo `signedResources`](../bindings/capture-binding-and-proof-v1.md#live-photo-signedresources).
+The primary photo remains the only depth resource. Nothing in this family
+describes or binds per-frame MOV depth.
 
 ## Input and failure rules
 
@@ -113,14 +98,6 @@ A conforming verifier MUST:
 3. apply every common Still/Live photo payload check, including depth
    availability and auxiliary-data presence;
 4. require the Live Photo content-binding family and all three named resource
-   descriptors;
-5. recompute the paired MOV SHA-256 over the full file without video decoding;
-6. compare the full canonical content digest and signing binding before sending
-   only the App Attest verification request fields to the backend.
-
-## Extraction note
-
-The current producer and specialized Live Photo contract agree that the MOV hash
-does not belong in `payload.livePhoto`. Adding it there, adding per-frame MOV
-depth, or reusing the Still Photo family would be a wire-format change outside
-`TAP-0094`.
+   descriptors; and
+5. apply the scope-aware local reconstruction and backend gates in
+   [Capture Binding and Proof v1](../bindings/capture-binding-and-proof-v1.md).

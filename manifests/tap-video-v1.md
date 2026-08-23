@@ -331,7 +331,7 @@ limit.
 | `buildNumber` | string | required | Producer build number. |
 | `schemaWriter` | string | required | Current producer value: `TAPCamDemo.TAPVideoManifestEncoder`. |
 
-## Consumer obligations and extraction note
+## Consumer obligations
 
 A consumer MUST first route the exact family and require `proofs: []`. It then
 authenticates the MP4 and canonical payload through the TAP Video content
@@ -339,10 +339,5 @@ binding before treating any payload claim as authenticated. A valid manifest
 does not by itself prove the physical scene, event, person, time, non-AI origin,
 or depth correctness.
 
-The current TypeScript Verifier strictly checks the complete schema identity,
-empty `proofs`, `payload.id`, `payload.packageID`, `payload.capturedAt`, and
-`depthCoverage.sampleCount`, but presently retains many other payload groups as
-untyped data rather than validating the complete producer field contract. That
-looser implementation is an extraction divergence, not permission for a v1
-producer to omit required groups or change their units, nullability, or
-semantics. See [`../KNOWN_DIVERGENCES.md`](../KNOWN_DIVERGENCES.md).
+Current verifier coverage gaps are tracked only in
+[Known Extraction Divergences](../KNOWN_DIVERGENCES.md).
