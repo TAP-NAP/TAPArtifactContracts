@@ -22,11 +22,13 @@ Current families include, but are not limited to:
 - TAP Video KLV frame v1
 - `.tapnap` verification-export v1
 
-## Contract-repository releases
+## Reviewed contract revisions
 
-A repository tag identifies one reviewed publication of these documents. It is
-not a global wire-format version. A tag may document several independent v1
-families at once.
+A reviewed Git commit identifies one publication of these documents. It is not
+a global wire-format version and may document several independent v1 families
+at once. A future repository tag MAY name a reviewed commit, but consumers MUST
+pin the exact reviewed commit rather than infer a wire-format version from a
+tag name.
 
 ## Change classification
 

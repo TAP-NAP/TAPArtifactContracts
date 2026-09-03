@@ -17,6 +17,11 @@ shared by TAPCam producers and TAP artifact verifiers.
 
 ## Authority and change order
 
+Task IDs and delivery status are owned by the sibling
+[TAPCamKanban Project Board](../TAPCamKanban/ProjectBoard.md). Read the complete
+matching Task before changing this repository. The Board may authorize work but
+is not required to interpret a released artifact contract.
+
 This repository must be interpretable without a producer or verifier checkout.
 Resolve contract questions in this order:
 

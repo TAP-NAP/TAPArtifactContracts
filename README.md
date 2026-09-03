@@ -48,7 +48,7 @@ dependency, generated binding, schema loader, or runtime network request.
 ## Consumer relationship
 
 ```text
-TAPArtifactContracts release
+reviewed TAPArtifactContracts revision
         |                         |
         | documents               | documents
         v                         v
