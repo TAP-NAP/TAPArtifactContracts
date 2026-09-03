@@ -331,10 +331,8 @@ sensitive in non-production builds.
 
 ## Examples and expected decision
 
-| Example | Expected manifest-stage decision | Reason |
-| --- | --- | --- |
-| [`still-photo-v1.json`](../examples/manifests/still-photo-v1.json) | Accept | Exact Still Photo family, complete v1 payload shape, explicit `location: null`, omitted `livePhoto`, and `proofs: []`. Full artifact verification still requires matching HEIC/JPEG, auxiliary-data state, proof slot, content digest, and App Attest result. |
-| [`invalid-photo-nonempty-proofs-v1.json`](../examples/manifests/invalid-photo-nonempty-proofs-v1.json) | Reject | `manifest.proofs` contains a synthetic placeholder object. A proof body is permitted only in the fixed proof slot. |
+The accepted shape and rejected non-empty-proof example are indexed with their
+expected decisions in [`examples/README.md`](../examples/README.md).
 
 ## Required consistency checks
 

@@ -5,12 +5,9 @@ photo containing the manifest, auxiliary still-photo depth when available, and
 the proof slot, plus one byte-preserved paired MOV. It is not a Still Photo alias
 and it does not claim per-frame MOV depth.
 
-The accepted synthetic shape example is
-[`examples/manifests/live-photo-v1.json`](../examples/manifests/live-photo-v1.json).
-Its expected manifest-stage decision is **Accept**: the exact Live Photo family,
-required `livePhoto` declaration, explicit `location: null`, and `proofs: []`
-are present. It is not a complete signed-media or canonical-byte golden vector;
-full verification still requires the primary photo, proof slot, and matching MOV.
+The accepted synthetic shape and its expected decision are indexed in
+[`examples/README.md`](../examples/README.md); it is not a complete signed-media
+or canonical-byte golden vector.
 
 ## Family identity
 
