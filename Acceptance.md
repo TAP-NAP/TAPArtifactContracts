@@ -295,7 +295,12 @@ and attended capture/playback recording; exclude private speech from retention.
    to readback; unsigned routing metadata contributes no trust.
 6. Open the item in TAP Library, page away/back, then press and hold. The correct
    native Live Photo plays without blank substitution/crash and returns to the
-   still presentation on release.
+   still presentation on release. Repeat after an iCloud download. Pinch and
+   pan a RAW photo, then let its full-quality image load: zoom and viewed region
+   remain stable. At minimum zoom, horizontal swipes page once per swipe;
+   while zoomed, they pan the image. Cancel and complete a system edge-back
+   gesture. Returning to the same item preserves the grid position; returning
+   after paging reveals the current item.
 7. Inspect the original MOV audio track and play it on an explicitly
    sound-enabled diagnostic/system surface. On rows reproduce the cue and
    report `audio = captured`; Off rows have no captured audio and report
@@ -520,7 +525,7 @@ camera, depth, signing, Photos, haptics, accessibility, performance or lifecycle
 | First-install Setup | Row hierarchy, icon identity, explicit row actions, required/optional states, app/system boundary |
 | Required Permission Check | Camera/Photos authorized, denied, restricted, Settings return and recovery; no Network, Continue, timeout, skip or fake system dialog |
 | Resource Initialization | Preparing, camera-first, catalog-first and ready handoff; stable until both groups complete; no failure/Retry/timeout/degraded-entry or unrelated warmup UI |
-| Viewer toolbar | Stable Photo/Live/Video media, pager/player and chrome; Share/Delete vectors and Back-matched circular backgrounds; compact centered RAW/2D/3D capsule |
+| Viewer toolbar | System navigation Back; stable Photo/Live/Video media, pager/player and bottom chrome; Share/Delete vectors and circular backgrounds; compact centered RAW/2D/3D capsule |
 | Share loading and credentials | Disabled until complete local/iCloud originals exist; local-check skeleton; Verified, Needs Retry and Failed states |
 | Format selector | Native icons, copy, enabled/future states and media-specific resource requirements |
 | Fast/slow preparation | Immediate thin determinate track only in the selected row's fixed subtitle slot; stable title/icon/badge/rows/popover/siblings |

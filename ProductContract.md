@@ -401,7 +401,7 @@ a filename is only an index hint. Missing depth is not an integrity failure, and
 depth health remains an optional semantic gate after local binding succeeds.
 
 TAP Video 3D is future work. AirPlay, Picture in Picture, and background playback
-are outside the product scope and must not remain on the Todo list.
+are outside the product scope.
 
 ### 3.4 Output and provenance scope
 
@@ -520,6 +520,14 @@ The current design is the Photos-style mixed-media Viewer:
 - native Live Photo press-and-hold playback;
 - local foreground TAP Video RAW/2D playback.
 
+The Library and Viewer use the system navigation bar and back gesture.
+Returning from the same photo preserves the grid position; returning after
+paging reveals the current item. RAW photos use native pinch, pan, and
+double-tap zoom. A higher-quality
+image of the same item preserves zoom and the viewed region. Live Photo hold
+recognition belongs to PhotoKit. Disabling AirPlay/external video playback does
+not disable these local browsing interactions.
+
 The former tool drawer, up-swipe Verify/drawer action, down-swipe dismissal,
 detents, and top-level Heatmap/Overlay/Mask buttons are **deprecated designs**.
 A Viewer redesign starts from the current interaction model and a reviewed
@@ -618,6 +626,9 @@ contracts are implemented.
 
 - Exported Photos assets use the system Photos deletion semantics and system
   confirmation only. TAPCam must not add a second app-owned confirmation.
+- Declining the system confirmation cancels deletion: retain the current item
+  and its local artifacts without an app error alert. Report actual deletion
+  failures separately.
 - Pending or local-only captures require an app-owned confirmation before local
   data is removed.
 - After deleting the current item, move to the item that occupied the next
@@ -739,6 +750,11 @@ real-device checks. Startup lifecycle checks use public-safe structured logs,
 automated event-order assertions, and a textual verdict. Images or recordings
 are retained only where the selected procedure requires them.
 
+Regression tests protect stable user behavior and data contracts across
+implementation changes. Expectations change only when the intended behavior
+changes. A UI control's existence or selected state does not establish visual
+continuity; transient defects require observation of the transition itself.
+
 First-install, empty-cache, first-open, large-catalog, iCloud, and first system-
 presentation paths require a genuinely cold run. Record a new installation or
 an explicitly cleared container/cache; warm re-entry is comparison evidence.
@@ -752,6 +768,16 @@ TAPCam uses two complementary current constraints:
 1. This document owns functionality and state machines.
 2. The approved HTML/Web prototype owns visible component hierarchy, icon
    identity, relative position, spacing, sizing, and simulated interaction.
+
+Visual continuity is a standing requirement for every UI surface. New features,
+changes, and reviews must check transitions, first presentation, asynchronous
+loading, retries, and background recovery for flashes, blank frames, jumps,
+and unnecessary content replacement. Keep usable content visible while its
+replacement or analysis is prepared, unless it is no longer valid for the
+current resource. Every accepted tap must produce a prompt visible response;
+resource reads, verification, or export preparation must not delay that response.
+Loading feedback must not briefly obscure already usable content. Check the
+transition over time, not only its final screenshot.
 
 Executable visual artifacts live in `TAPCamPrototype/Prototype/`; its manifest
 records the approved revision and fixture scope. The native app does not retain
