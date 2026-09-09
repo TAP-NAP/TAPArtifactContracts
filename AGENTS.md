@@ -1,42 +1,28 @@
 # TAPCam Documentation Rules
 
-This is the main documentation repository. Start with README and read only the
-contract or design section needed for the current request. Normative documents
-must be understandable here without another repository or a task record.
+Start with README and the relevant contract or design section. Each document
+must define its subject without requiring application source or private records.
 
-## Keep work small
+- Work from the requested scope, current source, and relevant tests. Clarify
+  unresolved behavior without reopening established decisions.
+- Write documentation for a new reader: purpose, concepts, usage, and limits.
+  Keep private planning records, internal identifiers, and execution diaries out
+  of source and documentation. Keep exact technical revisions where needed.
+- Prefer existing seams and deletion of redundant material. Add no dependencies,
+  generated infrastructure, or extra documentation without a current need.
+- Keep changes and validation proportional; report actual checks and limits.
+  Do not commit or push unless the current conversation authorizes it.
 
-- The user's explicit request authorizes a bounded fix or documentation cleanup.
-  Do not require a Task ID, Board Steward, full backlog scan, or repeated
-  confirmation of a settled decision. Source inspection is required only when
-  making or checking an implementation claim.
-- ProjectBoard is optional work notes for continuity. Read a matching item only
-  when relevant. Add a compact record only when work needs later continuation;
-  do not create records for routine completed fixes. Expired plans are inactive,
-  not a standing instruction to reopen work.
 - Keep product requirements, manifest/wire contracts, design rationale, and
-  acceptance procedures here. Consolidate related procedures into sections;
-  create no per-task Markdown, duplicate indexes, status copies, or audit diaries.
-- Product requirements are normative intent, not a claim that every behavior
-  ships. Tests/builds and dated acceptance establish implementation and evidence.
-  Keep incomplete implementation notes in ProjectBoard, separate from policy.
-- Zero-depth still photos and TAP Video are retained, signed, and exported.
-  Record depth availability honestly; downstream depth assessment is separate
-  from capture integrity. This is an established decision, not an open proposal.
-
-## Preserve contracts
-
-- The contract index and versioning policy govern shared formats. Preserve exact
-  identifiers, bytes, canonicalization, hash inputs, proof slots, resource sets,
-  and fail-closed decisions. Semantic/wire changes require owner direction and
-  the appropriate family revision; an editorial move does not change a pin.
-- Define fields, types, units, omission/null behavior, coordinates, and consumer
-  obligations in one owning document. Examples remain synthetic; routing
-  sidecars are unsigned and are not authenticity evidence.
-- Keep actual media, credentials, assertions, precise locations, parsers, SDKs,
-  application code, generated bindings, and runtime dependencies out of this repo.
-- Local README/AGENTS in implementation repositories own their run commands and
-  implementation map. Evidence may name a source revision or artifact, but may
-  not substitute for a missing normative definition here.
+  capability-specific validation here. Requirements describe intended behavior;
+  implementation and measured results require source/tests and actual evidence.
+- Valid zero-depth captures are retained, signed, and exported. Consumer depth
+  assessment remains separate from artifact integrity.
+- Preserve exact identifiers, canonicalization, hash inputs, proof slots,
+  resource sets, and fail-closed decisions. Follow the versioning policy for
+  semantic/wire changes; editorial changes do not advance a consumer pin.
+- Define fields, types, units, coordinates, and omission/null behavior in their
+  owning contract. Keep examples synthetic and routing sidecars unsigned.
+- Keep media, credentials, assertions, precise locations, application code,
+  parsers, SDKs, and runtime dependencies out of this repository.
 - Validate local links/anchors and JSON; check exact vectors when affected.
-  Report real evidence limits. Do not commit or push unless requested.

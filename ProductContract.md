@@ -1,47 +1,22 @@
 # TAPCam Product Contract
 
-- Status: canonical product constraint document
-- Owner: product owner
-- Last updated: 2026-09-09
+This document defines TAPCam's required behavior, state transitions, design
+constraints, and claim boundaries. It is a specification; implementation
+coverage and measured results are established by source, tests, and device
+validation.
 
-This document defines the product requirements, settled design decisions,
-claim boundaries, and non-goals for TAPCam. A required behavior is not by itself
-a claim that every implementation path already satisfies it. Current code and
-executed checks establish implementation; attended acceptance establishes the
-specific device evidence.
+## 1. Scope and terminology
 
-## 1. Document Authority And Classification
+A **requirement** describes behavior the product must satisfy. **Future** marks
+capabilities outside the current scope; **experimental** marks exploration
+without a production claim. **Non-goals** and **deprecated designs** are excluded.
 
-- **Product requirement**: behavior the product must satisfy. An implementation
-  gap is a defect or unfinished delivery, not an undecided product question.
-- **Future**: a capability outside the current required scope.
-- **Experimental**: exploration without a production-capability claim.
-- **Non-goal / deprecated design**: excluded behavior, not an automatic backlog.
-- **Evidence gap**: missing validation; it does not mean an implemented feature
-  must be implemented again.
-- **Historical record**: evidence about its recorded revision only.
-
-The main documentation is self-contained in this repository:
-
-- this contract owns product behavior, states, terms, and claim boundaries;
-- [CONTRACTS.md](CONTRACTS.md) indexes the authoritative manifest, binding,
-  proof, container, and transport families;
-- [BackendContract.md](BackendContract.md) owns App Attest HTTP and server trust;
-- [PlanesTechnicalDesign.md](PlanesTechnicalDesign.md) explains photo geometry;
-- [Acceptance.md](Acceptance.md) retains capability-specific executable checks;
-- [ProjectBoard.md](ProjectBoard.md) is optional continuity notes for unfinished
-  work, not a prerequisite for reading this contract or performing a user request.
-
-Implementation repositories keep their local source map and run/test commands.
-The executable Web prototype retains its visible design, fixtures, and approval
-metadata; §9 defines how an approved design is used. Source and prototype evidence
-cannot silently redefine the requirements here.
-
-First-install credential delivery and its implementation gap are recorded under
-[TAP-0010](ProjectBoard.md#tap-0010). Zero-depth video export is already a settled
-requirement (§3.3); no task status or missing device evidence reopens that decision.
-Do not interpret a document move, a Task marked Done, or a successful build as
-proof of physical-device behavior.
+The [artifact contracts](CONTRACTS.md) define the shared manifest, binding,
+proof, container, and transport formats. The [backend contract](BackendContract.md)
+defines App Attest HTTP and server trust. [Planes design](PlanesTechnicalDesign.md)
+explains photo geometry, and [acceptance procedures](Acceptance.md) describe
+validation by capability. Product definitions are complete here; a prototype
+illustrates the visible design without redefining these requirements.
 
 ### 1.1 Current runtime platform
 
@@ -93,12 +68,6 @@ the registered TAPNAP MIME and requires its current v1 root sidecar. Legacy
 `.zip`, `application/zip`, generic ZIP-magic discovery, and missing/invalid-
 sidecar filename fallback are unsupported. `.tapnap` remains ZIP-compatible
 internally; this input boundary does not remove bounded archive parsing.
-
-Prototype revision identifiers remain unchanged until a separate owner decision.
-Historical or redundant Prototype prose and assertions may be removed when no
-current fixture, approved visual truth, behavior, or acceptance obligation is
-lost. A repository move does not create a new revision or change approval or
-evidence state. Git history preserves extraction provenance.
 
 ## 2. First-Install Setup
 
@@ -249,8 +218,8 @@ Installation labels describe evidence context, never the route itself:
   reactivates an existing scene. A **Cold Resource Path** has no usable relevant
   cache, while a **Warm Resource Path** does. Warmth never changes route truth.
 
-Bare `reinstall`, `cold start`, or `first launch` is insufficient in a Task,
-test, log, or acceptance conclusion; name the installation, activation, and
+Bare `reinstall`, `cold start`, or `first launch` is insufficient in a test,
+log, or acceptance conclusion; name the installation, activation, and
 resource conditions separately.
 
 The deterministic route reads four facts:
@@ -463,28 +432,24 @@ bypass this gate, and Photos writers accept no unsigned artifact.
 
 ## 4. Locked Camera
 
-Locked Camera is **experimental**, not a current production capability.
+Locked Camera is experimental. The shipping project embeds no capture/control
+extension and has no Locked Camera intent, URL, user-activity, app-context, or
+session-content import runtime.
 
-- Existing POC, E-series experiments, API notes, smoke results, and their code
-  are historical experimental evidence only.
-- They may guide a later experiment but must not be presented as the current
-  product implementation.
-- The active goal is a new lifecycle-correct version that can launch, present a
-  real first frame, capture, suspend, exit, and relaunch without lifecycle
-  freezes or black-screen regressions.
-- This work remains isolated on its dedicated experiment branch until
-  explicitly promoted.
-- Production promotion requires a separate decision and attended device
-  acceptance.
-- The main shipping project embeds no Locked Camera capture or control
-  extension and owns no Locked Camera shared intent, URL or user-activity
-  entry, app-context publication, or session-content import runtime.
-  Experimental implementations belong only on dedicated experiment branches;
-  Git history remains the archive for removed main-tree code.
+An experiment must use public APIs and support launch, a real first preview
+frame, capture, suspend, exit, and repeated relaunch without freezes or black
+screens. Session configuration is committed before `startRunning`; containing-app
+import follows the public session-content update boundary and is idempotent.
+Opening the app is not proof that a captured resource was migrated or imported.
 
-The extension does not own App Attest, Photos export, network work, Live Photo,
-or unsolicited permission requests. Those remain explicit non-goals for the
-experimental extension boundary.
+The extension captures only unsigned media under the system session-content
+boundary. App Attest, Photos export, network work, Live Photo, and unsolicited
+permission requests are outside its responsibility. The containing app owns
+later signing/export through its normal pending queue; it must remain responsive
+while content becomes available and preserve diagnosable source data on failure.
+
+An experiment remains isolated from the shipping target until its complete
+lifecycle is validated on device and its inclusion is explicitly reviewed.
 
 ## 5. TAP Library, Pending Capture Queue, And Viewer
 
@@ -557,9 +522,8 @@ The current design is the Photos-style mixed-media Viewer:
 
 The former tool drawer, up-swipe Verify/drawer action, down-swipe dismissal,
 detents, and top-level Heatmap/Overlay/Mask buttons are **deprecated designs**.
-They are not Todo items and must not be restored as the starting point for a
-future redesign. Any new Viewer proposal requires a new task and an approved
-prototype.
+A Viewer redesign starts from the current interaction model and a reviewed
+prototype, rather than restoring these former controls.
 
 Static-photo 3D means a native point projection for an eligible photo with
 usable depth and calibration. It does not mean mesh, scan, reconstruction,
@@ -762,37 +726,24 @@ assets.
 
 ## 8. Evidence And Acceptance
 
-Use the relevant [acceptance section](Acceptance.md) when device evidence is
-needed. A separate Task or per-task Markdown file is not required. Before a
-device run, the product owner confirms its concrete scope. The result includes:
+The [acceptance procedures](Acceptance.md) define validation by capability.
+Every result identifies the source/build, device/OS, selected scenario, reset
+and resource conditions, actions, expected results, retained evidence, and
+pass/fail/blocked outcome. Destructive resets and operations on personal media
+require the device owner's authorization. Attended runs record the tester's
+observations and the reviewer's verdict.
 
-- related delivery and product-contract section;
-- build/commit, device, and OS;
-- prerequisites and reset/install procedure;
-- numbered user actions;
-- an expected result for every action;
-- required evidence types, such as structured logs, automated assertions,
-  textual owner verdicts, and output artifacts where the procedure actually
-  needs them;
-- explicit pass, fail, and blocked conditions;
-- final human confirmation.
+Simulator tests establish only the boundaries they exercise. Camera, Photos,
+App Attest hardware/backend, iCloud, and device performance require their own
+real-device checks. Startup lifecycle checks use public-safe structured logs,
+automated event-order assertions, and a textual verdict. Images or recordings
+are retained only where the selected procedure requires them.
 
-Simulator tests, automated UI tests, structured logs, and procedure-approved
-artifacts may contribute evidence, but they cannot impersonate an attended
-physical-device acceptance. Image or video proof is retained only when the
-specific owner-approved procedure requires it. The TAP-0040/TAP-0041 startup
-lifecycle procedures retain no photo, screenshot, or screen recording; they
-use public-safe structured logs, automated assertions, and an owner-live
-textual verdict. Only an explicitly recorded owner verdict can establish attended acceptance.
-
-Cold-path behavior is a separate required evidence condition whenever a
-capability performs first-install, empty-cache, first-open, large-catalog,
-iCloud, or first system-presentation work. The attended procedure must include
-a newly installed app or an explicitly cleared container/cache. A successful
-warm re-entry is useful comparison evidence, but it cannot substitute for the
-cold run or close a cold-path acceptance condition. Scalable work must follow
-§2.7, including visible acknowledgement before it begins, bounded publication,
-exact request ownership, cleanup, and public-safe evidence.
+First-install, empty-cache, first-open, large-catalog, iCloud, and first system-
+presentation paths require a genuinely cold run. Record a new installation or
+an explicitly cleared container/cache; warm re-entry is comparison evidence.
+Scalable work must follow §2.7, including visible acknowledgement, bounded
+publication, exact request ownership, cleanup, and public-safe diagnostics.
 
 ## 9. UI Design Source Of Truth
 
@@ -817,11 +768,11 @@ accessibility, performance, or physical-device acceptance.
 
 Every intentional visible design change records the owner-approved scope,
 affected product states, prototype path/revision, components/icons, uncovered
-states, and relevant Simulator/device comparison. No Task record is required. The workflow is fixed:
+states, and relevant Simulator/device comparison. The design workflow is:
 
 ```text
 Product Contract + owner-approved change
-    -> sibling HTML/Web prototype revision
+    -> HTML/Web prototype revision
     -> explicit product-owner visual approval
     -> SwiftUI implementation
     -> Simulator comparison

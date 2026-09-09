@@ -37,9 +37,8 @@ their tests or runtime genuinely read the local copy and cannot depend on
 another checkout. Those mirrors are not a second contract authority. Adoption
 review MUST compare each mirror with its shared canonical file.
 
-Downstream repositories own the locations and synchronization checks for any
-necessary executable mirrors. This repository deliberately does not index or
-link to those private copies.
+Each implementation documents the locations and synchronization checks for its
+executable mirrors alongside its tests.
 
 The canonical-JSON vector's exact UTF-8 case hash is
 `47fa943b3af7d6ad7e43653c9175a4d82c7248764dc8b7dbc7b152950d2ab473`.
