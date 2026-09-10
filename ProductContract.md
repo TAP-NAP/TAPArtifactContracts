@@ -589,8 +589,10 @@ slider or independently stored per-view intensity.
 Keep completed originals and reusable analysis data within the existing current
 and adjacent resource window. Revisiting a valid ready resource displays it
 directly, without replaying a loading animation. A preview remains visible while
-the complete original or depth is prepared. Local reads and copies are not
-reported as iCloud downloads; only a real cloud request uses that feedback.
+the complete original or depth is prepared. Preparation and iCloud retrieval
+show one indeterminate spinner, without loading captions, percentages, or a
+determinate progress ring. Keep preview brightness and layout stable. Resource
+owners retain actual progress and cancellation; failure recovery remains visible.
 Source/content changes invalidate affected originals; poster-only changes do
 not discard valid originals or browsing intent. Memory pressure and window
 eviction release retained data, while an outstanding Share lease keeps its own

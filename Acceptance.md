@@ -419,8 +419,9 @@ false recording state, or a missing prepared graph is Fail.
 7. Capture known landmarks and measure same-frame registered-depth/RGB error
    against the predeclared display-space tolerance. Do not loosen it afterward.
 8. Prove a signed original is not local, then open it. Keep poster/preview
-   visible with one monotonic progress state. Swipe away/back and dismiss during
-   download: underlying work cancels and stale callbacks cannot replace the
+   visible at unchanged brightness with one indeterminate spinner and no loading
+   caption or percentage. Swipe away/back and dismiss during download:
+   underlying work cancels and stale callbacks cannot replace the
    current item. Reopen, finish, and confirm RAW/eligible 2D. Induce offline
    failure, restore connectivity, and exercise visible recovery.
 
