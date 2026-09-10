@@ -375,7 +375,7 @@ TAP Video's current product contract includes:
 - pending ingest, signing, export, and original-resource readback;
 - TAP Library poster and local foreground RAW playback;
 - registered 2D playback when registration is available;
-- RGB-colored camera-relative point-cloud playback when its geometry is usable;
+- RGB-colored point-cloud playback with spatial history when successive observations can be aligned;
 - both Standard and eligible PRO Video capture paths.
 
 No-depth TAP Video follows the same non-blocking principle as still photos:
@@ -408,9 +408,21 @@ readback, identity and local binding are revalidated. Photos playback success or
 a filename is only an index hint. Missing depth is not an integrity failure, and
 depth health remains an optional semantic gate after local binding succeeds.
 
-TAP Video 3D projects synchronized depth frames into an RGB-colored,
-camera-relative point cloud when depth, calibration and color registration are
-usable. It is a changing per-frame view, not a fused world-space reconstruction.
+TAP Video 3D projects synchronized depth frames into an RGB-colored point cloud
+when depth, calibration and color registration are usable. During continuous
+3D playback, image correspondences and original depth estimate relative camera
+motion so selected past observations can remain in a shared local space.
+Gestures can revisit those observations without moving the video playhead.
+History is accumulated and shown during appreciable camera movement. With a
+stationary camera, default playback shows the current frame alone; changing
+objects do not create an ever-growing trail. User gestures can reveal retained
+history even after the camera stops. The default view follows the current frame
+and keeps its image center at screen center; frame updates preserve manual
+viewing adjustments. Historical points retain their original RGB mapping and
+brightness, with the same clear point style as the current frame and no fading
+or softening. During default playback, old points in the current capture view
+are hidden; manual exploration can reveal them. This bounded keyframe preview
+retains past observations rather than asserting that moving objects remain there.
 If a saved distortion lookup folds peripheral rays toward the center, display
 uses a pinhole approximation with the saved intrinsics for that frame. This
 does not correct or replace the source depth or establish geometric accuracy.
@@ -425,8 +437,9 @@ using the optional [capture-telemetry extension](containers/tap-video-capture-te
 Motion is collected automatically for recording, with observable availability,
 drops and errors; it has no Settings toggle and does not supply full camera pose.
 Motion failure must not block an otherwise valid recording, signing or export.
-MultiCam, ARKit, camera translation, confidence maps and scene flow are outside
-this implementation.
+MultiCam, ARKit, recorded full camera poses, confidence maps and scene flow are
+outside this implementation. Display-side camera-motion estimates do not alter
+the original artifact or become signed sensor measurements.
 
 Release uses `3D Playback Smoothing` enabled and `Apple Depth Filtering`
 disabled. Debug Settings provides exactly two yellow-background override rows
@@ -632,6 +645,12 @@ does not fill signed gaps, advance that frame's sample timestamp, or establish
 that its geometry is accurate at the current playhead.
 Video point-cloud gestures follow the photo viewer's fixed-camera interaction;
 the first drag must not change zoom, and frame updates preserve the user's view.
+Spatial history accumulates from the current 3D playback entry point. Seeking,
+leaving 3D, changing the source, or resetting processing starts a new history.
+An unsuccessful frame-to-frame alignment hides spatial history while the usable
+current frame continues to update. It preserves the last successfully aligned
+raw observation for the next estimate; held frames and temporally smoothed
+depth are not inputs to motion estimation.
 The existing app Settings owns both Debug preferences. Changing the Filtering preference
 cannot reconfigure an active recording; the sheet explains that it affects
 later recordings.

@@ -348,12 +348,25 @@ media must clear the prior item's cloud, including when the new item has no
 depth or has not produced its first usable frame. Gap/zero-depth cases keep RAW
 available; the held display must not invent stored samples or change source
 timestamps. Compare
-flicker, edge trails, latency, drops and bounded memory; motion cannot compensate
+flicker, edge trails, latency, drops and bounded memory; Core Motion telemetry alone cannot compensate
 for translation or independently moving subjects. State device observations
 and regressions, rather than claiming improvement from the switch alone.
 Compare ordinary dual-camera and PRO LiDAR clips for peripheral geometry
 folding. Confirm the first one-finger drag rotates without a zoom jump and that
 frame updates preserve the user's viewing transform, as in photo 3D.
+For spatial history, record a short static scene while moving the camera, enter
+3D at the beginning and play through at least three seconds. Rotate/pan the view
+to revisit the first second's observed region without moving the playhead.
+Confirm that history stays spatially aligned and retains its original RGB,
+brightness and clear point shape as playback advances; current points stay centered.
+With the camera fixed and a changing subject, default playback shows only the
+latest frame. Move the camera and then stop: historical points should settle
+out of default view and remain available through deliberate view gestures.
+During a depth gap, the last displayed frame holds. With usable current RGB-D
+but unsuccessful alignment, the current frame keeps updating without spatial
+history. Then seek and change media to confirm the previous processing context
+cannot reappear. The preview
+uses selected bounded keyframes, not every past frame or a complete scene map.
 
 Exercise unsupported/error/no-sample motion states and the retained-sample cap.
 Read the signed telemetry back from pending and exported Photos-original bytes,
