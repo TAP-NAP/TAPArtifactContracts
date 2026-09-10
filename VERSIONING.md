@@ -20,7 +20,8 @@ Current families include, but are not limited to:
 - App Attest capture-signing v1
 - TAP Video depth-registration v1
 - TAP Video KLV frame v1
-- TAP Video capture-telemetry v1 (optional extension candidate)
+- TAP Video inline calibration v1 (`CALD`, optional KLV extension)
+- TAP Video capture-telemetry v1 (optional UUID extension)
 - `.tapnap` verification-export v1
 
 ## Reviewed contract revisions
@@ -52,6 +53,13 @@ without redefining this contract. Changing the shared decision still requires
 an owner-approved compatible or breaking family revision.
 
 ## Current pre-release policy
+
+The optional [`CALD`](containers/tap-video-container-v1.md#inline-calibration-extension-cald)
+and [`TAPCAMTELEMETRY1`](containers/tap-video-capture-telemetry-v1.md)
+extensions are adopted at their existing v1 definitions. This pre-release
+adoption does not change their bytes or semantics, `TVER=1`, manifest and
+content-binding families, or any schema-version value. Consumers adopt them by
+pinning the reviewed contract commit; no family version is advanced.
 
 Superseded development identifiers and cross-family combinations are
 unsupported. Consumers fail closed instead of silently accepting a legacy alias

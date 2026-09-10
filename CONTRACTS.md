@@ -10,12 +10,15 @@ implementation-local behavior.
 | TAP Video manifest | [`manifests/tap-video-v1.md`](manifests/tap-video-v1.md) | JSON fields and manifest box identity | Recorder, pending queue, playback |
 | Capture binding and proof | [`bindings/capture-binding-and-proof-v1.md`](bindings/capture-binding-and-proof-v1.md) | Canonical bytes, family hash participation, producer signing, local reconstruction, App Attest assertion verification, signed resources | App Attest key lifecycle and server deployment |
 | Photo containers | [`containers/photo-containers-v1.md`](containers/photo-containers-v1.md) | XMP discovery and HEIC/JPEG proof-slot layout | ImageIO/Photos implementation |
-| TAP Video container and KLV | [`containers/tap-video-container-v1.md`](containers/tap-video-container-v1.md) | MP4 boxes and KLV v1 records | AVFoundation writer/reader implementation |
+| TAP Video container and KLV | [`containers/tap-video-container-v1.md`](containers/tap-video-container-v1.md) | MP4 boxes and KLV v1 records, including optional inline calibration `CALD` | AVFoundation writer/reader implementation |
 | TAP Video capture telemetry | [`containers/tap-video-capture-telemetry-v1.md`](containers/tap-video-capture-telemetry-v1.md) | Optional independently versioned UUID, filtering observations and bounded device-motion samples | Capture scheduling, stabilization and display smoothing |
 | `.tapnap` transport | [`transport/tapnap-v1.md`](transport/tapnap-v1.md) | Archive and unsigned routing-sidecar conventions | Share UI and temporary-file lifecycle |
 
 Synthetic JSON examples, the exact TAP Video vectors, and their expected
 outcomes are indexed in [examples/README.md](examples/README.md).
+`CALD` and `TAPCAMTELEMETRY1` are adopted optional v1 extensions. Their exact
+acceptance and rejection vectors share the same authority as their field and
+byte definitions.
 
 ## Terms
 

@@ -258,6 +258,11 @@ count requires a non-empty table. A positive overflow count requires
 `tableOverflowed: true`; when `tableOverflowed` is true, the table has 16
 entries.
 
+The optional [inline-calibration `CALD` record](../containers/tap-video-container-v1.md#inline-calibration-extension-cald)
+preserves a frame's calibration when the table is full. Such a frame still
+counts as `overflowUnindexedSampleCount`; it creates no `CALI` index and changes
+none of these counters.
+
 #### `CameraCalibration`
 
 | Field | Type | Presence | Unit / representation |

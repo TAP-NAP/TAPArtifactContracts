@@ -26,7 +26,8 @@ Manifest families are independent:
 [TAP Video](manifests/tap-video-v1.md).
 The [versioning policy](VERSIONING.md) defines compatibility and revision rules.
 [Synthetic examples and exact vectors](examples/README.md) show field values,
-serialization, and expected validation results.
+serialization, and expected validation results, including the adopted optional
+TAP Video inline-calibration and capture-telemetry extensions.
 
 Actual per-capture manifests are embedded in their media: Still/Live in
 HEIC/JPG XMP and Video in the MP4 manifest UUID box. App Attest proofs occupy

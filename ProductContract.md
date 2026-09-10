@@ -421,13 +421,15 @@ Motion failure must not block an otherwise valid recording, signing or export.
 MultiCam, ARKit, camera translation, confidence maps and scene flow are outside
 this implementation.
 
-Debug Settings adds exactly two yellow-background rows, both initially off:
-`Apple Depth Filtering` and `3D Playback Smoothing`. Filtering is a request for
-subsequent TAP Video recordings, frozen when recording begins. Actual delivered
-filtering observations remain distinct from that request in signed telemetry.
-Changing display Smoothing affects the current 3D projection without modifying
-the original MP4, KLV, manifest, telemetry, proof or normal export/retry flow.
-Neither setting is a Release control or an alternate unsigned recording mode.
+Release uses `3D Playback Smoothing` enabled and `Apple Depth Filtering`
+disabled. Debug Settings provides exactly two yellow-background override rows
+with those same defaults. Filtering is a request for subsequent TAP Video
+recordings, frozen when recording begins. Actual delivered filtering
+observations remain distinct from that request in signed telemetry. The
+Smoothing preference is chosen in app Settings before playback and controls
+display projection without modifying the original MP4, KLV, manifest, telemetry,
+proof or normal export/retry flow. Neither setting is a Release control or an
+alternate unsigned recording mode.
 
 ### 3.4 Output and provenance scope
 

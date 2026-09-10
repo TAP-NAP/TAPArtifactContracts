@@ -1,6 +1,6 @@
 # TAP Video Capture Telemetry v1
 
-Status: v1 extension candidate
+Status: adopted optional v1 extension
 
 Capture telemetry records Apple depth-filtering observations and bounded Core
 Motion samples for one TAP Video. It is optional in the existing TAP Video v1
@@ -29,8 +29,8 @@ MUST validate the complete recognized box after local binding succeeds and
 before allowing a server verification request or accepting its semantics.
 Unknown or malformed identities inside this recognized UUID fail closed.
 Absence is legacy/unknown provenance, not evidence that filtering was off or
-motion was unavailable. Each consumer adopts the extension at a reviewed
-contract revision; an uncommitted candidate is not a new reviewed pin.
+motion was unavailable. Each consumer pins the reviewed contract revision at
+which it adopts this extension.
 
 ## JSON fields
 
@@ -38,6 +38,9 @@ Every object below has exactly the listed keys. All keys are required;
 `motionToCaptureOffsetSeconds` alone permits explicit `null`. Missing keys,
 unknown keys and duplicate keys fail. Counts are non-negative integers within
 the exact safe-integer range `0...9007199254740991`; measured numbers are finite.
+
+The [shared extension vectors](../examples/vectors/tap-video-extensions-v1.json)
+include exact accepted bytes and rejected unknown-member and UTF-8 BOM cases.
 
 The root keys are `schema`, `filtering`, and `motion`.
 

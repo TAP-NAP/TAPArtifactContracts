@@ -1,7 +1,7 @@
 # Normative Examples
 
 These files make field names, omission rules, family routing, rejection
-conditions, canonical JSON bytes, and TAP Video KLV/decompression bytes
+conditions, canonical JSON bytes, and TAP Video extension/KLV/decompression bytes
 concrete. All values are synthetic.
 
 They are documentation examples, not captured media or executable conformance
@@ -25,11 +25,12 @@ for the named sub-contract, not a complete independently verifiable artifact.
 | [`vectors/tap-capture-canonical-json-v1.json`](vectors/tap-capture-canonical-json-v1.json) | accept — exact vector | Immutable canonical UTF-8 bytes for one synthetic object covering ordering, arrays, strings, signed 64-bit integers, and representative binary32/binary64 values |
 | [`vectors/tap-video-klv-zstd1-v1-golden-vector.json`](vectors/tap-video-klv-zstd1-v1-golden-vector.json) | accept — exact vector | Raw/zstd1/KLV depth-frame bytes shared across producer and verifier tests; the manifest shape remains the separate manifest example above |
 | [`vectors/tap-video-display-transform-v1.json`](vectors/tap-video-display-transform-v1.json) | accept — exact vector | One 3 × 2 top-left-origin grid with expected row-major output for all eight rotation/mirror forms |
+| [`vectors/tap-video-extensions-v1.json`](vectors/tap-video-extensions-v1.json) | exact accept/reject cases | Canonical `CALD` and `TAPCAMTELEMETRY1` payload bytes, plus rejected unknown `__proto__` members, UTF-8 BOMs and nonzero Base64 pad bits |
 
 The transport examples describe `tapcam-export.json`, which is unsigned routing
 metadata and never authenticity evidence.
 
-The canonical-JSON and TAP Video KLV/zstd vectors differ from the shape examples:
+The canonical-JSON and TAP Video byte vectors differ from the shape examples:
 their byte counts, hashes, and encoded bytes are exact. Consumers MUST NOT
 regenerate them merely to make an incompatible implementation pass. Source
 repositories may keep byte-identical or literal hermetic mirrors only when
@@ -45,3 +46,14 @@ The canonical-JSON vector's exact UTF-8 case hash is
 The KLV/zstd JSON file's SHA-256 is
 `e0d4d2d0d5f199ec942d4b1b7a93c945021cab912418422924faaa43c1fe2cd7`.
 The display-transform vector records all eight expected grids.
+
+The extension vector has a `context` object and seven entries in `cases`.
+`context.durationSeconds` and `context.timeScale` supply the corresponding
+manifest `payload.container` values; `context.deliveredDepthSampleCount`
+supplies `payload.depthCoverage.deliveredSampleCount` for telemetry checks.
+Each case names its `extension` (`cald` or `telemetry`), `expectedDecision`
+(`accept` or `reject`), and reason. Decode `utf8Base64` to obtain the exact
+extension JSON payload; `utf8ByteCount` and `utf8SHA256` describe those bytes.
+The bytes exclude the enclosing KLV record or BMFF UUID box. The `CALD`
+positive case stores one synthetic four-byte zero lookup-table value. Its
+nonzero-pad-bit negative case decodes to the same value and still MUST fail.

@@ -121,6 +121,7 @@ by key, not by position; record order is not significant.
 | `COMP` | required, once | ASCII bytes | `raw`, `lzfse`, or `zstd1`. The value MUST also be permitted by the manifest `compressionPolicy`. |
 | `ULEN` | required, once | 4-byte UInt32BE | Uncompressed packed-frame byte count. It MUST equal `depthCoverage.format.uncompressedFrameByteCount`. |
 | `CALI` | optional, at most once | 4-byte UInt32BE | Zero-based index into `spatialRegistration.calibrationTable`; it MUST be in bounds. |
+| `CALD` | optional, at most once | canonical JSON, at most 3,072 bytes | [Inline calibration](#inline-calibration-extension-cald); mutually exclusive with `CALI`. |
 | `DPTH` | required, once | bytes | Raw or independently compressed packed depth/disparity bytes. |
 
 Unknown four-character keys are skippable for forward-compatible parsing. An
@@ -131,10 +132,10 @@ records. Their invariant facts live in the manifest; a writer MUST NOT emit
 them as substitutes for required records, and a reader MUST NOT assign them v1
 semantics.
 
-### Inline calibration extension candidate: `CALD`
+### Inline calibration extension: `CALD`
 
-Status: local, unpublished compatibility candidate; no new reviewed commit pin.
-This candidate uses the existing skippable-key rule without changing `TVER=1`,
+Status: adopted optional v1 extension.
+This extension uses the existing skippable-key rule without changing `TVER=1`,
 the manifest family, or any hash exclusion. It preserves the current frame's
 calibration when the bounded table cannot supply a `CALI` index; calibration
 values can change on every captured frame.
@@ -147,7 +148,9 @@ is at most **3,072 bytes** of UTF-8 canonical JSON containing exactly these keys
 | `calibration` | `CameraCalibration` | The current frame's full AVFoundation calibration, using the existing [field definitions](../manifests/tap-video-v1.md#cameracalibration), units and coordinates. |
 | `schemaVersion` | integer | Exactly `1`. |
 
-Canonical serialization uses sorted object keys and no insignificant whitespace;
+Canonical serialization uses
+[TAP capture canonical JSON](../bindings/capture-binding-and-proof-v1.md#tap-capture-canonical-json),
+with sorted object keys and no insignificant whitespace or byte-order mark;
 duplicate keys, unknown keys, malformed UTF-8, non-finite numbers, and trailing
 bytes are rejected. The calibration has the five existing required fields and
 only the two existing optional lookup-table fields, each omitted, `null`, or a
@@ -157,7 +160,12 @@ constraints. `Dimensions` and `Point` retain their exact existing field sets.
 Measurement numbers retain the existing numeric-token rules; `schemaVersion`
 uses the integer token `1`, not `1.0`.
 
-A reader recognizing this candidate validates `CALD` even when it does not
+Canonical padded Base64 uses zero unused pad bits; a different spelling that
+decodes to the same lookup-table bytes is not canonical. The
+[shared extension vectors](../examples/vectors/tap-video-extensions-v1.json)
+include exact accepted bytes and rejected unknown-member, BOM, and pad-bit cases.
+
+A reader recognizing this extension validates `CALD` even when it does not
 render 3D. It rejects simultaneous `CALI`/`CALD`, invalid calibration, and an
 oversized payload. Existing readers may skip `CALD` as an unknown key and
 continue their v1 checks. Other unknown keys retain the same skippable behavior.

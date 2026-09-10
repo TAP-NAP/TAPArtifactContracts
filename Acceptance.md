@@ -326,13 +326,16 @@ comparable performance runs. Run audio Off and On independently; On requires
 both OS permission and app data use. AirPlay, Picture in Picture, background
 playback are outside this acceptance scope.
 
+Confirm Release uses Smoothing on and Filtering off, and fresh Debug settings
+start at those same defaults. Only Debug Settings exposes overrides.
 For point-cloud playback and Debug comparison, use the same device, camera,
 resolution and lighting. Compare off/off, Filtering on/Smoothing off, and
 Filtering off/Smoothing on. Filtering requires separate captures; Smoothing
 must compare the same signed original at the same PTS and viewing angle, with
-the preference chosen in existing app Settings before playback. Preserve the source hash across display
-changes. Record the requested filtering setting separately from actual signed
-filtered/unfiltered counts; an unavailable actual result is not an off result.
+the preference chosen in existing app Settings before playback. Preserve the
+source hash across display changes. Record the requested filtering setting
+separately from actual signed filtered/unfiltered counts; an unavailable actual
+result is not an off result.
 
 Include a fixed camera/static scene, a moving foreground subject, gentle camera
 rotation, translation/parallax, and a scene with local depth holes and a true
