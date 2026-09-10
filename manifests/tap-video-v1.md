@@ -213,7 +213,10 @@ is not copied into `DPTH`.
 | `nearestEndRGBFrame` | integer | optional | nearest RGB frame index at the end |
 
 `boundedAggregation` is the conservative range used after the 1,024-entry gap
-table reaches its limit; a consumer clears depth for the whole range. A
+table reaches its limit; a consumer treats depth as unavailable for the whole
+range. A visual playback consumer may retain a previously displayed valid
+frame, but that display is not a new sample or evidence that current depth is
+available. A
 `MediaTime` object has required integer `value` (ticks) and integer `timescale`
 (ticks per second, `> 0`); seconds are `value / timescale`.
 

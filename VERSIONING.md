@@ -20,6 +20,7 @@ Current families include, but are not limited to:
 - App Attest capture-signing v1
 - TAP Video depth-registration v1
 - TAP Video KLV frame v1
+- TAP Video capture-telemetry v1 (optional extension candidate)
 - `.tapnap` verification-export v1
 
 ## Reviewed contract revisions

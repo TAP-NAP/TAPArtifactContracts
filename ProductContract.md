@@ -368,6 +368,7 @@ TAP Video's current product contract includes:
 - pending ingest, signing, export, and original-resource readback;
 - TAP Library poster and local foreground RAW playback;
 - registered 2D playback when registration is available;
+- RGB-colored camera-relative point-cloud playback when its geometry is usable;
 - both Standard and eligible PRO Video capture paths.
 
 No-depth TAP Video follows the same non-blocking principle as still photos:
@@ -400,8 +401,33 @@ readback, identity and local binding are revalidated. Photos playback success or
 a filename is only an index hint. Missing depth is not an integrity failure, and
 depth health remains an optional semantic gate after local binding succeeds.
 
-TAP Video 3D is future work. AirPlay, Picture in Picture, and background playback
-are outside the product scope.
+TAP Video 3D projects synchronized depth frames into an RGB-colored,
+camera-relative point cloud when depth, calibration and color registration are
+usable. It is a changing per-frame view, not a fused world-space reconstruction.
+If a saved distortion lookup folds peripheral rays toward the center, display
+uses a pinhole approximation with the saved intrinsics for that frame. This
+does not correct or replace the source depth or establish geometric accuracy.
+During missing frames or unavailable depth, the visual display retains the last
+valid point cloud until a new one is ready; RAW RGB/audio remain available.
+AirPlay, Picture in Picture,
+and background playback are outside the product scope.
+
+The single-camera AVCapture recording path remains authoritative. Core Motion
+records bounded device attitude, angular velocity, gravity and user acceleration
+using the optional [capture-telemetry extension](containers/tap-video-capture-telemetry-v1.md).
+Motion is collected automatically for recording, with observable availability,
+drops and errors; it has no Settings toggle and does not supply full camera pose.
+Motion failure must not block an otherwise valid recording, signing or export.
+MultiCam, ARKit, camera translation, confidence maps and scene flow are outside
+this implementation.
+
+Debug Settings adds exactly two yellow-background rows, both initially off:
+`Apple Depth Filtering` and `3D Playback Smoothing`. Filtering is a request for
+subsequent TAP Video recordings, frozen when recording begins. Actual delivered
+filtering observations remain distinct from that request in signed telemetry.
+Changing display Smoothing affects the current 3D projection without modifying
+the original MP4, KLV, manifest, telemetry, proof or normal export/retry flow.
+Neither setting is a Release control or an alternate unsigned recording mode.
 
 ### 3.4 Output and provenance scope
 
@@ -518,7 +544,7 @@ The current design is the Photos-style mixed-media Viewer:
 - a bottom capsule for `RAW / 2D / 3D` modes;
 - Share and Delete actions in the bottom toolbar;
 - native Live Photo press-and-hold playback;
-- local foreground TAP Video RAW/2D playback.
+- local foreground TAP Video RAW/2D/3D playback for each eligible mode.
 
 The Library and Viewer use the system navigation bar and back gesture.
 Returning from the same photo preserves the grid position; returning after
@@ -542,11 +568,29 @@ TAP Video opens a pending file or a leased temporary copy of the Photos original
 without loading the whole MP4. RAW RGB/audio playback is independent of depth;
 2D requires a complete registered spatial descriptor and matching depth track.
 Decode is bounded around the playhead, and seek, discontinuity, item change,
-cancellation, backgrounding, or memory reset clears retained depth so stale
-frames cannot cross contexts. Playback is local and foreground-only with
+cancellation, backgrounding, or memory reset clears decoder and smoothing
+history so samples cannot cross processing contexts. Playback is local and foreground-only with
 external playback disabled. Viewer Share validates and leases the exact same
 original bytes; it does not re-fetch them, call backend Verify, pre-generate a
 package, or persist a Share cache.
+
+Video 3D uses the same playhead, original-resource lease and cancellation
+boundaries. Projection and temporal display smoothing run off the MainActor
+with bounded retained frames. Smoothing does not bridge declared depth gaps,
+calibration/layout changes, seeks or stale requests; its derived pixels and
+points never replace stored evidence. The Viewer adds no Settings entry.
+The 3D presentation retains the same item's last valid displayed frame while
+waiting for another usable frame, including during a depth gap or failed frame
+update. It must not flash a blank view or a no-data banner on those updates.
+If no frame has yet been displayed, it waits without an error banner. A new
+media item clears the previous item's point cloud. Holding a displayed frame
+does not fill signed gaps, advance that frame's sample timestamp, or establish
+that its geometry is accurate at the current playhead.
+Video point-cloud gestures follow the photo viewer's fixed-camera interaction;
+the first drag must not change zoom, and frame updates preserve the user's view.
+The existing app Settings owns both Debug preferences. Changing the Filtering preference
+cannot reconfigure an active recording; the sheet explains that it affects
+later recordings.
 
 ### 5.3 Share
 

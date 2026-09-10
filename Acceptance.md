@@ -324,7 +324,43 @@ manifest/depth counters, and exact original-resource readback. Prepare sufficien
 storage/power and record initial thermal state. Disable Low Power Mode for
 comparable performance runs. Run audio Off and On independently; On requires
 both OS permission and app data use. AirPlay, Picture in Picture, background
-playback, and video 3D are outside this acceptance scope.
+playback are outside this acceptance scope.
+
+For point-cloud playback and Debug comparison, use the same device, camera,
+resolution and lighting. Compare off/off, Filtering on/Smoothing off, and
+Filtering off/Smoothing on. Filtering requires separate captures; Smoothing
+must compare the same signed original at the same PTS and viewing angle, with
+the preference chosen in existing app Settings before playback. Preserve the source hash across display
+changes. Record the requested filtering setting separately from actual signed
+filtered/unfiltered counts; an unavailable actual result is not an off result.
+
+Include a fixed camera/static scene, a moving foreground subject, gentle camera
+rotation, translation/parallax, and a scene with local depth holes and a true
+depth gap. Confirm RGB colors stay on corresponding geometry and current frames
+apply their calibration and mirror transform without blending across changes.
+During a gap or failed 3D update, the same item's last valid point cloud remains
+visible without blank flashes or a no-data banner, and the next usable frame
+replaces it. Pause/seek should settle on the intended usable frame. Switching
+media must clear the prior item's cloud, including when the new item has no
+depth or has not produced its first usable frame. Gap/zero-depth cases keep RAW
+available; the held display must not invent stored samples or change source
+timestamps. Compare
+flicker, edge trails, latency, drops and bounded memory; motion cannot compensate
+for translation or independently moving subjects. State device observations
+and regressions, rather than claiming improvement from the switch alone.
+Compare ordinary dual-camera and PRO LiDAR clips for peripheral geometry
+folding. Confirm the first one-finger drag rotates without a zoom jump and that
+frame updates preserve the user's viewing transform, as in photo 3D.
+
+Exercise unsupported/error/no-sample motion states and the retained-sample cap.
+Read the signed telemetry back from pending and exported Photos-original bytes,
+check timestamp order/duration, quaternion layout, filtering counts and bounded
+availability states, then verify that mutations fail binding and malformed
+recognized telemetry fails locally before a server request. Existing artifacts
+without telemetry remain readable with unknown provenance. Repeat lifecycle
+stop/background, repeated recordings and signing/export/retry checks. Browser
+fixtures and automated parser tests do not establish sensor-clock accuracy,
+visual improvement or real-device acceptance.
 
 Declare device/iOS coverage, repetitions, CPU/RSS/dirty-memory/disk/thermal/drop
 budgets, codec p50/p95 budgets, registration tolerance, and the method for proving

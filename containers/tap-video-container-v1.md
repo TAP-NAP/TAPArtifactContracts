@@ -44,6 +44,11 @@ an empty proof slot without changing existing media-table offsets. The manifest
 and all media bytes remain inside the signed asset-byte view. Only the complete
 proof-slot `uuid` box is excluded from that byte view.
 
+The optional independently versioned
+[capture-telemetry extension](tap-video-capture-telemetry-v1.md) adds a top-level
+UUID box covered by that same asset-byte view. It changes no v1 track or KLV
+record and grants no additional proof-slot exclusion.
+
 The `TAPCAMVIDEOMANF1` box contains no proof body and manifest `proofs` MUST be
 empty. Its proof envelope is stored only in the proof-slot box. The exact TAP
 Video family, excluded range, hash participation, and signing fields are defined
@@ -125,6 +130,48 @@ The FourCC values `DKND`, `PIXF`, `DIM `, `RSTR`, and `CALR` are not v1 frame
 records. Their invariant facts live in the manifest; a writer MUST NOT emit
 them as substitutes for required records, and a reader MUST NOT assign them v1
 semantics.
+
+### Inline calibration extension candidate: `CALD`
+
+Status: local, unpublished compatibility candidate; no new reviewed commit pin.
+This candidate uses the existing skippable-key rule without changing `TVER=1`,
+the manifest family, or any hash exclusion. It preserves the current frame's
+calibration when the bounded table cannot supply a `CALI` index; calibration
+values can change on every captured frame.
+
+`CALD` is optional, at most once, and mutually exclusive with `CALI`. Its payload
+is at most **3,072 bytes** of UTF-8 canonical JSON containing exactly these keys:
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `calibration` | `CameraCalibration` | The current frame's full AVFoundation calibration, using the existing [field definitions](../manifests/tap-video-v1.md#cameracalibration), units and coordinates. |
+| `schemaVersion` | integer | Exactly `1`. |
+
+Canonical serialization uses sorted object keys and no insignificant whitespace;
+duplicate keys, unknown keys, malformed UTF-8, non-finite numbers, and trailing
+bytes are rejected. The calibration has the five existing required fields and
+only the two existing optional lookup-table fields, each omitted, `null`, or a
+canonical padded-base64 string. Matrices contain exactly 9 and 12 finite numbers;
+dimensions, pixel size, and distortion center retain their existing finite-number
+constraints. `Dimensions` and `Point` retain their exact existing field sets.
+Measurement numbers retain the existing numeric-token rules; `schemaVersion`
+uses the integer token `1`, not `1.0`.
+
+A reader recognizing this candidate validates `CALD` even when it does not
+render 3D. It rejects simultaneous `CALI`/`CALD`, invalid calibration, and an
+oversized payload. Existing readers may skip `CALD` as an unknown key and
+continue their v1 checks. Other unknown keys retain the same skippable behavior.
+
+The 16-entry table and all `calibrationCoverage` counters remain unchanged:
+`indexedSampleCount` counts only `CALI`; a frame with calibration that could not
+enter the full table remains `overflowUnindexedSampleCount` even when it carries
+`CALD`. Missing calibration is not fabricated, and inline calibration does not
+create a table index. Old recordings without a stored per-frame calibration
+cannot recover that calibration from this extension.
+
+The `CALD` bytes remain in the timed-depth payload and therefore in the existing
+signed asset-byte view. No excluded range, proof slot, resource, track, or
+transport family is added.
 
 ## Packed frame and codec rules
 
