@@ -123,6 +123,6 @@ Producers preserve whole, valid JSON; they MUST NOT truncate the encoded box.
 If encoding would exceed 4 MiB, discard retained tail samples, include those in
 the dropped count and recompute status before serialization.
 
-Smoothing settings and derived display frames are not part of this extension.
+Display preferences and derived display frames are not part of this extension.
 The observation counts and motion samples remain unchanged when a player
 changes its display policy.

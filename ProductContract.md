@@ -411,23 +411,26 @@ depth health remains an optional semantic gate after local binding succeeds.
 TAP Video 3D projects synchronized depth frames into an RGB-colored point cloud
 when depth, calibration and color registration are usable. During continuous
 3D playback, image correspondences and original depth estimate relative camera
-motion so selected past observations can remain in a shared local space.
+motion so observations can remain in a shared local space.
 Gestures can revisit those observations without moving the video playhead.
-History is accumulated and shown during appreciable camera movement. With a
-stationary camera, default playback shows the current frame alone; changing
-objects do not create an ever-growing trail. User gestures can reveal retained
-history even after the camera stops. The default view follows the current frame
-and keeps its image center at screen center; frame updates preserve manual
-viewing adjustments. Historical points retain their original RGB mapping and
-brightness, with the same clear point style as the current frame and no fading
-or softening. During default playback, old points in the current capture view
-are hidden; manual exploration can reveal them. This bounded keyframe preview
-retains past observations rather than asserting that moving objects remain there.
+Points outside the current capture view stay frozen at their original density,
+RGB and brightness. A successfully aligned observation replaces old points
+within its capture view, so revisiting a region updates it and a stationary camera does not stack
+changing objects. Frozen regions remain visible after camera movement stops.
+The default view follows the current frame and keeps its image center at screen
+center; frame updates preserve manual viewing adjustments. Current and frozen
+points use the same clear point renderer, without age-based thinning, fading or
+softening. Pausing freezes the displayed accumulated scene while gestures can
+inspect it; resuming continues scene updates. This display does not fill unseen
+or occluded surfaces or assert that past observations remain unchanged in reality.
 If a saved distortion lookup folds peripheral rays toward the center, display
 uses a pinhole approximation with the saved intrinsics for that frame. This
 does not correct or replace the source depth or establish geometric accuracy.
-During missing frames or unavailable depth, the visual display retains the last
-valid point cloud until a new one is ready; RAW RGB/audio remain available.
+Usable current RGB-D continues projecting even when alignment fails, while the
+accepted spatial map stays unchanged. Missing RGB/depth retains the geometry
+and original RGB; available recorded Core Motion continues display rotation
+with the playhead while translation holds its last reliable value. RAW
+RGB/audio remain available.
 AirPlay, Picture in Picture,
 and background playback are outside the product scope.
 
@@ -441,15 +444,14 @@ MultiCam, ARKit, recorded full camera poses, confidence maps and scene flow are
 outside this implementation. Display-side camera-motion estimates do not alter
 the original artifact or become signed sensor measurements.
 
-Release uses `3D Playback Smoothing` enabled and `Apple Depth Filtering`
-disabled. Debug Settings provides exactly two yellow-background override rows
-with those same defaults. Filtering is a request for subsequent TAP Video
-recordings, frozen when recording begins. Actual delivered filtering
-observations remain distinct from that request in signed telemetry. The
-Smoothing preference is chosen in app Settings before playback and controls
-display projection without modifying the original MP4, KLV, manifest, telemetry,
-proof or normal export/retry flow. Neither setting is a Release control or an
-alternate unsigned recording mode.
+3D playback projects each usable RGB-D sample directly without waiting for
+neighboring samples. `Apple Depth Filtering` defaults to disabled and keeps
+its yellow-background Debug override. Filtering
+is a request for subsequent TAP Video recordings, frozen when recording begins.
+Actual delivered filtering observations remain distinct from that request in
+signed telemetry. Playback does not modify the original MP4, KLV,
+manifest, telemetry, proof or normal export/retry flow. Filtering is not a
+Release control or an alternate unsigned recording mode.
 
 ### 3.4 Output and provenance scope
 
@@ -625,33 +627,44 @@ TAP Video opens a pending file or a leased temporary copy of the Photos original
 without loading the whole MP4. RAW RGB/audio playback is independent of depth;
 2D requires a complete registered spatial descriptor and matching depth track.
 Decode is bounded around the playhead, and seek, discontinuity, item change,
-cancellation, backgrounding, or memory reset clears decoder and smoothing
-history so samples cannot cross processing contexts. Playback is local and foreground-only with
+cancellation, backgrounding, or memory reset clears decoder history so samples
+cannot cross processing contexts. Playback is local and foreground-only with
 external playback disabled. Viewer Share validates and leases the exact same
 original bytes; it does not re-fetch them, call backend Verify, pre-generate a
 package, or persist a Share cache.
 
 Video 3D uses the same playhead, original-resource lease and cancellation
-boundaries. Projection and temporal display smoothing run off the MainActor
-with bounded retained frames. Smoothing does not bridge declared depth gaps,
-calibration/layout changes, seeks or stale requests; its derived pixels and
-points never replace stored evidence. The Viewer adds no Settings entry.
-The 3D presentation retains the same item's last valid displayed frame while
-waiting for another usable frame, including during a depth gap or failed frame
-update. It must not flash a blank view or a no-data banner on those updates.
+boundaries. Projection and spatial alignment run independently off the MainActor,
+with one in-flight operation each and only the latest pending observation.
+Slow alignment must not hold current-frame display or build a per-frame backlog.
+Late map updates reuse the latest projected geometry to refresh its history,
+including at the final frame; they do not repeat RGB/depth projection or alignment.
+Derived pixels and points never replace stored evidence. The Viewer adds no Settings entry.
+When current RGB-D is unavailable, 3D retains the same item's displayed geometry
+and RGB without flashing a blank view or a no-data banner.
 If no frame has yet been displayed, it waits without an error banner. A new
-media item clears the previous item's point cloud. Holding a displayed frame
-does not fill signed gaps, advance that frame's sample timestamp, or establish
-that its geometry is accurate at the current playhead.
+media item clears the previous item's point cloud. Held geometry preserves its
+sample timestamps and point positions. Available recorded Core Motion may
+continue camera rotation as the playhead advances; translation remains at the
+last reliable estimate. Without usable motion, that rotation also holds. This
+display motion does not fill signed gaps, invent a complete camera pose or
+establish geometric accuracy at the current playhead.
 Video point-cloud gestures follow the photo viewer's fixed-camera interaction;
 the first drag must not change zoom, and frame updates preserve the user's view.
-Spatial history accumulates from the current 3D playback entry point. Seeking,
-leaving 3D, changing the source, or resetting processing starts a new history.
-An unsuccessful frame-to-frame alignment hides spatial history while the usable
-current frame continues to update. It preserves the last successfully aligned
-raw observation for the next estimate; held frames and temporally smoothed
-depth are not inputs to motion estimation.
-The existing app Settings owns both Debug preferences. Changing the Filtering preference
+Both photo and video 3D start at scale 1 and allow scaling from 0.1 to 3.2.
+Spatial history accumulates from the current 3D playback entry point. Only
+seeking, leaving 3D, changing the source or an explicit resource reset starts a
+new history. Pause/resume, preference refreshes, delayed periodic callbacks and
+player time-jump notifications alone do not clear the accepted spatial map.
+An unsuccessful alignment, including insufficient overlap, must not block
+usable current-frame projection. It preserves the accepted map and does not
+add unaligned points to that map. Old regions overlapping the current view may
+be clipped for display, without deleting their stored points; paused gestures
+can inspect the retained scene. Only successful alignment of a new sample from
+the active source and playback request can replace mapped regions. Stale work
+cannot overwrite a later update. Motion estimation uses original RGB and depth
+samples, not display-held geometry or derived display depth.
+The existing app Settings owns the Debug Filtering preference. Changing it
 cannot reconfigure an active recording; the sheet explains that it affects
 later recordings.
 

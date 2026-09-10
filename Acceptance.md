@@ -326,14 +326,12 @@ comparable performance runs. Run audio Off and On independently; On requires
 both OS permission and app data use. AirPlay, Picture in Picture, background
 playback are outside this acceptance scope.
 
-Confirm Release uses Smoothing on and Filtering off, and fresh Debug settings
-start at those same defaults. Only Debug Settings exposes overrides.
+Confirm 3D projects each usable RGB-D sample directly without waiting for
+neighboring samples.
+Filtering defaults to off; its override remains in Debug Settings.
 For point-cloud playback and Debug comparison, use the same device, camera,
-resolution and lighting. Compare off/off, Filtering on/Smoothing off, and
-Filtering off/Smoothing on. Filtering requires separate captures; Smoothing
-must compare the same signed original at the same PTS and viewing angle, with
-the preference chosen in existing app Settings before playback. Preserve the
-source hash across display changes. Record the requested filtering setting
+resolution and lighting. Compare Filtering off and on using separate captures.
+Preserve the source hash across display changes. Record the requested filtering setting
 separately from actual signed filtered/unfiltered counts; an unavailable actual
 result is not an off result.
 
@@ -341,11 +339,13 @@ Include a fixed camera/static scene, a moving foreground subject, gentle camera
 rotation, translation/parallax, and a scene with local depth holes and a true
 depth gap. Confirm RGB colors stay on corresponding geometry and current frames
 apply their calibration and mirror transform without blending across changes.
-During a gap or failed 3D update, the same item's last valid point cloud remains
-visible without blank flashes or a no-data banner, and the next usable frame
-replaces it. Pause/seek should settle on the intended usable frame. Switching
-media must clear the prior item's cloud, including when the new item has no
-depth or has not produced its first usable frame. Gap/zero-depth cases keep RAW
+During a depth gap, geometry and RGB remain available without blank flashes or
+a no-data banner. With recorded motion, camera rotation must continue with the
+playhead while translation holds its last reliable value. Usable current RGB-D
+must update the projection even if spatial alignment fails. Pause/seek should
+settle on the intended usable frame. Switching media must clear the prior item's
+cloud, including when the new item has no depth or has not produced its first
+usable frame. Gap/zero-depth cases keep RAW
 available; the held display must not invent stored samples or change source
 timestamps. Compare
 flicker, edge trails, latency, drops and bounded memory; Core Motion telemetry alone cannot compensate
@@ -354,19 +354,40 @@ and regressions, rather than claiming improvement from the switch alone.
 Compare ordinary dual-camera and PRO LiDAR clips for peripheral geometry
 folding. Confirm the first one-finger drag rotates without a zoom jump and that
 frame updates preserve the user's viewing transform, as in photo 3D.
+For both photo and video 3D, confirm initial scale 1, pinch down to 0.1 and up
+to 3.2, with frame updates preserving scale and original geometry and RGB.
 For spatial history, record a short static scene while moving the camera, enter
 3D at the beginning and play through at least three seconds. Rotate/pan the view
 to revisit the first second's observed region without moving the playhead.
-Confirm that history stays spatially aligned and retains its original RGB,
-brightness and clear point shape as playback advances; current points stay centered.
-With the camera fixed and a changing subject, default playback shows only the
-latest frame. Move the camera and then stop: historical points should settle
-out of default view and remain available through deliberate view gestures.
-During a depth gap, the last displayed frame holds. With usable current RGB-D
-but unsuccessful alignment, the current frame keeps updating without spatial
-history. Then seek and change media to confirm the previous processing context
-cannot reappear. The preview
-uses selected bounded keyframes, not every past frame or a complete scene map.
+Confirm that regions leaving the capture view remain spatially aligned at their
+original point density, RGB and brightness. Return to an earlier region after
+changing its visible content: new observations must replace its old points.
+With the camera fixed and a changing subject, that region shows only the latest
+observation without stacked copies. Pause after moving the camera: the whole
+displayed scene must freeze, including any frame processing still in flight,
+while rotation/pan/zoom can inspect frozen regions without changing the playhead.
+Resume and confirm scene updates continue without clearing retained regions.
+Current and frozen points must use the same clear point style; default playback
+stays centered on the current frame.
+During a depth gap, verify that geometry, sample timestamps and RGB stay
+unchanged while recorded motion advances only display rotation, with no new
+translation estimate. Pause within the gap: playback rotation stops and gestures
+can inspect the scene; resume continues rotation without dropping history.
+With usable RGB-D but unsuccessful alignment, including a non-overlapping
+view, confirm current geometry and colors keep updating. The accepted spatial
+map must retain its old points without adding unaligned observations; display
+clipping must not delete them. Check that slow alignment does not stall the
+current projection or accumulate queued frames. At the final frame, let an earlier
+alignment finish and the final alignment fail: newly accepted history must still
+become visible without another frame or a seek. While paused, defer that visual
+update until resume. Return to an overlapping view and confirm mapped
+regions update only after successful alignment. Preference refreshes, delayed
+periodic callbacks and player time-jump notifications alone must preserve the
+map; stale work must not erase regions or overwrite a later accepted update.
+Exercise seek, leaving 3D, source changes and an explicit resource reset to
+confirm these boundaries clear the old spatial scene. Observe memory and frame
+latency as newly viewed area grows; repeated views should replace scene regions
+without thinning frozen geometry.
 
 Exercise unsupported/error/no-sample motion states and the retained-sample cap.
 Read the signed telemetry back from pending and exported Photos-original bytes,

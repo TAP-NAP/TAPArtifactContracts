@@ -19,6 +19,8 @@ capture -> manifest + content binding -> App Attest proof -> signed artifact
   trust, and replay boundaries.
 - [Planes design](PlanesTechnicalDesign.md): the photo geometry algorithm and
   its reasoning.
+- [视频 RGB 点云空间留存实验](VideoPointCloudExperiment.md)：当前实验目标、播放规则、
+  成功判据与真机验收边界。
 
 Manifest families are independent:
 [Still Photo](manifests/still-photo-v1.md),
