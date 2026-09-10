@@ -384,6 +384,13 @@ run, not after its outcome:
 | AF taps, first MF tap assist after re-entry, full MF slider movement during recording | 10 each |
 | VIDEO → front → rear PRO | 10 |
 
+For Photo ↔ Video, hold each underlying prepare/restore operation. The stable
+outer ring and target inner-circle appearance must remain visible, capture must
+wait for actual completion, and Library must remain available. Confirm both
+directions use the same transition. Exercise failure, backgrounding and an old
+completion arriving after a new configuration; none may reopen the wrong
+shutter. Repeat using accessibility activation as well as touch.
+
 After every cycle check frost, recording state, Library entry, and next-recording
 readiness. First-recording starvation, zero-duration RGB, black/frozen preview,
 false recording state, or a missing prepared graph is Fail.
@@ -566,10 +573,25 @@ camera, depth, signing, Photos, haptics, accessibility, performance or lifecycle
 | Resource Initialization | Preparing, camera-first, catalog-first and ready handoff; stable until both groups complete; no failure/Retry/timeout/degraded-entry or unrelated warmup UI |
 | Viewer toolbar | System navigation Back; stable Photo/Live/Video media, pager/player and bottom chrome; Share/Delete vectors and circular backgrounds; compact centered RAW/2D/3D capsule |
 | Share loading and credentials | Opens immediately before originals are ready; fixed Preparing, Verified and actual Failed header; no skeleton; exactly two stable format rows |
-| Format selector | Native icons, copy, enabled/future states and media-specific resource requirements |
+| Format selector | Native icons, copy, stable implemented options and media-specific resource requirements |
 | Fast/slow preparation | Immediate thin determinate track only in the selected row's fixed subtitle slot; stable title/icon/badge/rows/popover/siblings |
 | Failure, Retry and stale work | Public-safe failure in the same anchored surface; Retry only the failed option; old callbacks/artifacts cannot affect the new attempt |
 | System handoff and dismissal | Popover disappears before one native activity controller; unchanged Viewer on return; attempt-scoped temporary cleanup |
+
+For mixed-media browsing, select 2D or 3D and change the comparison position,
+then page through Photo, Live Photo, video A and video B. Mode intent and the
+shared toolbar persist; playback time and point-cloud data do not cross items.
+Repeat with delayed depth, unsupported media, a cancelled swipe, and video still
+preparing. The playback bar enters/exits only after committed cross-type paging
+and stays in place for video-to-video changes. Change Settings intensity and
+confirm both photo/video 2D use it with no detail slider.
+
+Return to a ready adjacent item and verify the retained original is actually
+readable and no redundant load/decode is started. Then change its content
+revision, change only its poster revision, evict it beyond the window, and apply
+memory pressure. Check the corresponding invalidation/reuse and retained Share
+lease. Verify actual iCloud-only loading separately from local reading/copying;
+neither a local progress callback nor a warm run establishes iCloud behavior.
 
 Exercise Share on Photo, Live Photo and TAP Video without remounting the Viewer.
 Opening the selector freezes the tapped media identity and original-resource

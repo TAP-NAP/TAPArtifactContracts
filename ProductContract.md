@@ -324,6 +324,13 @@ are future work. Source switching, if approved, must recompute depth and manual
 control capabilities from the active Apple camera path; it must not be described
 as ordinary preview zoom.
 
+Photo and Video use one stable shutter outer ring. The inner circle transitions
+between white and red, with the same animation in both directions; recording
+retains the red stop square. Preparation keeps the target mode's appearance
+while disabling capture until the actual session operation completes. Animation
+completion is never camera readiness. Preparing a mode does not disable the
+Library entry; active recording retains its existing Library restriction.
+
 The executable capture path has these fail-closed boundaries:
 
 - Planning is pure decision logic. A Standard choice resolves one Apple-paired
@@ -555,6 +562,39 @@ double-tap zoom. A higher-quality
 image of the same item preserves zoom and the viewed region. Live Photo hold
 recognition belongs to PhotoKit. Disabling AirPlay/external video playback does
 not disable these local browsing interactions.
+
+One toolbar remains mounted outside photo/video content branches. RAW, 2D, 3D,
+Share and Delete keep their positions through preparation and paging. Pending
+resources do not remove or temporarily disable viewing-mode and Share entries;
+feedback belongs to the requested content or Share panel. Genuine lack of a
+capability is distinct from incomplete preparation.
+
+Viewing-mode intent and the applicable comparison position belong to one detail
+browsing session and survive photo, Live Photo and video changes. Preparation
+preserves that intent. An unsupported resource temporarily displays RAW with a
+reason; the next supporting resource restores the chosen mode. Playback time,
+depth samples and point-cloud content belong to the individual resource.
+
+The playback bar is visible whenever the settled selected item is video,
+including while that video prepares. Photo and Live Photo hide it. Cross-type
+paging moves and fades the bar only after the page commits; a cancelled swipe
+does not change it. Video-to-video paging keeps the same bar and clears the old
+video's active progress. No expand/collapse preference or gesture is offered.
+Playback remains button-controlled; Live Photo retains native hold playback.
+
+Settings owns one `Depth overlay intensity` value, defaulting to 75% depth and
+25% original. Photo and video 2D read it directly. There is no detail opacity
+slider or independently stored per-view intensity.
+
+Keep completed originals and reusable analysis data within the existing current
+and adjacent resource window. Revisiting a valid ready resource displays it
+directly, without replaying a loading animation. A preview remains visible while
+the complete original or depth is prepared. Local reads and copies are not
+reported as iCloud downloads; only a real cloud request uses that feedback.
+Source/content changes invalidate affected originals; poster-only changes do
+not discard valid originals or browsing intent. Memory pressure and window
+eviction release retained data, while an outstanding Share lease keeps its own
+bytes alive. A loaded flag is not a substitute for a retained resource.
 
 The former tool drawer, up-swipe Verify/drawer action, down-swipe dismissal,
 detents, and top-level Heatmap/Overlay/Mask buttons are **deprecated designs**.
