@@ -21,6 +21,7 @@ for the named sub-contract, not a complete independently verifiable artifact.
 | [`manifests/invalid-photo-nonempty-proofs-v1.json`](manifests/invalid-photo-nonempty-proofs-v1.json) | reject | Manifest proof bodies are forbidden; the proof belongs in the fixed slot |
 | [`transport/still-photo-tapnap-v1.json`](transport/still-photo-tapnap-v1.json) | accept for routing only | One declared primary-photo resource |
 | [`transport/live-photo-tapnap-v1.json`](transport/live-photo-tapnap-v1.json) | accept for routing only | One primary-photo and one paired-video resource |
+| [`transport/tap-video-tapnap-v1.json`](transport/tap-video-tapnap-v1.json) | accept for routing only | One complete original signed TAP Video MP4 resource |
 | [`transport/invalid-tapnap-duplicate-primary-v1.json`](transport/invalid-tapnap-duplicate-primary-v1.json) | reject | Ambiguous duplicate primary-photo resources |
 | [`vectors/tap-capture-canonical-json-v1.json`](vectors/tap-capture-canonical-json-v1.json) | accept — exact vector | Immutable canonical UTF-8 bytes for one synthetic object covering ordering, arrays, strings, signed 64-bit integers, and representative binary32/binary64 values |
 | [`vectors/tap-video-klv-zstd1-v1-golden-vector.json`](vectors/tap-video-klv-zstd1-v1-golden-vector.json) | accept — exact vector | Raw/zstd1/KLV depth-frame bytes shared across producer and verifier tests; the manifest shape remains the separate manifest example above |

@@ -565,20 +565,27 @@ camera, depth, signing, Photos, haptics, accessibility, performance or lifecycle
 | Required Permission Check | Camera/Photos authorized, denied, restricted, Settings return and recovery; no Network, Continue, timeout, skip or fake system dialog |
 | Resource Initialization | Preparing, camera-first, catalog-first and ready handoff; stable until both groups complete; no failure/Retry/timeout/degraded-entry or unrelated warmup UI |
 | Viewer toolbar | System navigation Back; stable Photo/Live/Video media, pager/player and bottom chrome; Share/Delete vectors and circular backgrounds; compact centered RAW/2D/3D capsule |
-| Share loading and credentials | Disabled until complete local/iCloud originals exist; local-check skeleton; Verified, Needs Retry and Failed states |
+| Share loading and credentials | Opens immediately before originals are ready; fixed Preparing, Verified and actual Failed header; no skeleton; exactly two stable format rows |
 | Format selector | Native icons, copy, enabled/future states and media-specific resource requirements |
 | Fast/slow preparation | Immediate thin determinate track only in the selected row's fixed subtitle slot; stable title/icon/badge/rows/popover/siblings |
 | Failure, Retry and stale work | Public-safe failure in the same anchored surface; Retry only the failed option; old callbacks/artifacts cannot affect the new attempt |
 | System handoff and dismissal | Popover disappears before one native activity controller; unchanged Viewer on return; attempt-scoped temporary cleanup |
 
 Exercise Share on Photo, Live Photo and TAP Video without remounting the Viewer.
-Opening the selector freezes complete originals and checks only local proof/
-content binding; no backend/App Attest Verify request occurs. Photos assets
-without a queue record can be Verified from embedded identity; Needs Retry is
-queue-only. A local mismatch disables TAPNAP Package while direct Image/Video
+Opening the selector freezes the tapped media identity and original-resource
+source even while loading. It joins the existing load, retains the resolved
+originals, and checks only local proof/content binding; no backend/App Attest
+Verify request occurs. Paging and late callbacks must not substitute another
+source. Photos assets without a queue record can be Verified from embedded
+identity. Pending signing, iCloud loading, and local checking remain Preparing;
+a same-source signed update becomes Verified only after the new bytes pass. A local mismatch disables TAPNAP Package while direct Image/Video
 retains an explicit unverifiability warning. Still/Live Package needs complete
-valid resources; Video Package, Sticker and Link stay unavailable until their
-respective formats exist.
+valid resources. TAP Video Package contains the exact original signed MP4 and
+its routing sidecar, with zero-depth video included. The two format rows remain
+mounted through selected-row progress, failure and Retry; Sticker and Link
+placeholders are absent. Decode exported packages through the browser input
+resolver and run the existing media verification path; altered media must fail
+before a server request. Preserve raw image and video sharing.
 
 For fast and slow preparation, other options remain visible but disabled.
 Progress is monotonic, with no percentage, visible Cancel, delayed reveal,

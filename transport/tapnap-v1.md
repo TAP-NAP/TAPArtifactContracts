@@ -1,12 +1,13 @@
 # `.tapnap` Verification Transport v1
 
-Status: v1 transport contract for Still Photo and Live Photo
+Status: current pre-release v1 transport contract for Still Photo, Live Photo, and TAP Video
 Routing sidecar family: `urn:tapnap:tapcam:verification-export:v1`
 
 `.tapnap` is a byte-preserving transport wrapper. It carries original media to
 a verifier; it is not an artifact-manifest family, a signature format, or
-authenticity evidence. The authoritative Still Photo or Live Photo manifest and
-proof remain embedded in the primary HEIC/JPEG resource.
+authenticity evidence. The authoritative manifest and proof remain embedded in
+the original media: the primary HEIC/JPEG for Still/Live Photo, or the MP4 for
+TAP Video.
 
 V1 support is deliberately bounded:
 
@@ -14,11 +15,17 @@ V1 support is deliberately bounded:
 | --- | --- |
 | Still Photo v1 | supported |
 | Live Photo v1 | supported |
-| TAP Video v1 | future / Coming Soon |
+| TAP Video v1 | supported |
 
-A TAP Video v1 artifact is one signed MP4 and MUST NOT be wrapped in `.tapnap` or
-routed with `tapcam-export.json`. This document assigns no Video package kind or
-Video resource role.
+A TAP Video package carries one complete original signed MP4. Its embedded
+manifest, proof slot, RGB/audio tracks, and any depth or telemetry remain inside
+that MP4. Producers MUST NOT transcode the media or extract a second manifest,
+proof, or depth file for this transport. Raw MP4 sharing remains supported.
+
+This video layout is part of the current pre-release v1 definition under the
+[pre-release policy](../VERSIONING.md#current-pre-release-policy). It extends the
+earlier photo-only development definition; this does not imply that earlier
+producer or verifier revisions supported video packages.
 
 ## Transport identity
 
@@ -60,6 +67,14 @@ TAPNAP-Capture.tapnap
 └── tapcam-export.json
 ```
 
+TAP Video:
+
+```text
+TAPNAP-Capture.tapnap
+├── original-video.mp4
+└── tapcam-export.json
+```
+
 The sidecar is exactly the root entry `tapcam-export.json`. V1 producers write
 the declared media resources as root entries with the names above. A
 Live Photo whose original paired video is unavailable is not a successful Live
@@ -70,8 +85,10 @@ media and must report that full Live Photo verification is incomplete.
 
 The sidecar is unsigned routing metadata. Its only authority is to map a small
 set of resource roles to exact archive entries. A verifier derives the actual
-manifest family and verification scope from the proof-bearing primary photo,
+manifest family and verification scope from the proof-bearing original media,
 never from `packageKind`, `mediaType`, warnings, filenames, or archive shape.
+`packageKind` selects the bounded media parser; an incompatible or invalid
+embedded artifact fails verification rather than being reclassified.
 
 Every v1 producer sidecar contains these fields:
 
@@ -79,11 +96,23 @@ Every v1 producer sidecar contains these fields:
 | --- | --- | --- | --- |
 | `schemaID` | string | required | `urn:tapnap:tapcam:verification-export:v1` |
 | `version` | integer | required | `1` |
-| `packageKind` | string | required | `stillPhoto` or `livePhotoPackage` |
+| `packageKind` | string | required | `stillPhoto`, `livePhotoPackage`, or `tapVideo` |
 | `resources` | array | required | Exact role-to-entry mappings defined below. |
 | `warningLabels` | array of strings | required | Labels for presentation-adjustment resources detected by the producer; empty when none. |
 | `warnings` | array of strings | required | Human-readable routing/export warnings corresponding to the labels; empty when none. These strings are not signed claims. |
-| `trustBoundary` | string | required | `This sidecar is not signed. Verify primary photo and paired video bytes against the TAP signature embedded in the photo.` |
+| `trustBoundary` | string | required | The exact package-kind-specific text below. |
+
+For `stillPhoto` and `livePhotoPackage`, `trustBoundary` is exactly:
+
+```text
+This sidecar is not signed. Verify primary photo and paired video bytes against the TAP signature embedded in the photo.
+```
+
+For `tapVideo`, it is exactly:
+
+```text
+This sidecar is not signed. Verify original video bytes against the TAP signature embedded in the video.
+```
 
 A conforming v1 sidecar contains only these routing/presentation fields. It
 MUST NOT contain capture IDs, package or Photos identifiers, App Attest key IDs,
@@ -109,8 +138,9 @@ V1 roles are:
 
 | Role | Cardinality | Declared resource | V1 media type |
 | --- | --- | --- | --- |
-| `primaryPhoto` | exactly one in every package | Original proof-bearing HEIC/HEIF or JPEG bytes | Producer uses `public.heic` for HEIC and `public.jpeg` for JPEG. |
-| `pairedLivePhotoVideo` | zero for `stillPhoto`; exactly one for `livePhotoPackage` | Original paired QuickTime MOV bytes | `com.apple.quicktime-movie` |
+| `primaryPhoto` | exactly one in Still/Live Photo; absent for TAP Video | Original proof-bearing HEIC/HEIF or JPEG bytes | Producer uses `public.heic` for HEIC and `public.jpeg` for JPEG. |
+| `pairedLivePhotoVideo` | exactly one for `livePhotoPackage`; absent otherwise | Original paired QuickTime MOV bytes | `com.apple.quicktime-movie` |
+| `primaryVideo` | exactly one for `tapVideo`; absent otherwise | Complete original proof-bearing MP4 bytes | `public.mpeg-4` |
 
 `tapDepthManifestPayload` is a signed-resource role inside the embedded Live
 Photo content digest. It is not a `.tapnap` archive resource and MUST NOT appear
@@ -119,15 +149,16 @@ as a sidecar resource descriptor.
 For a conforming `stillPhoto` sidecar, `resources` contains exactly one
 `primaryPhoto` descriptor and no paired-video descriptor. For a conforming
 `livePhotoPackage` sidecar, it contains exactly one `primaryPhoto` followed by
-exactly one `pairedLivePhotoVideo`. The `packageKind` and resource set MUST
-agree, but neither is allowed to override the embedded manifest family.
+exactly one `pairedLivePhotoVideo`. For `tapVideo`, it contains exactly one
+`primaryVideo` and no photo or paired-video descriptors. The `packageKind` and
+resource set MUST agree, but neither may override the embedded manifest family.
 
 `filename` resolves the exact archive entry. A verifier MUST NOT select the
 first file with a matching extension, guess a conventional name after a failed
 lookup, or silently replace one declared entry with another. The primary entry
 must have a supported photo suffix (`.heic`, `.heif`, `.jpg`, or `.jpeg`), and
-the paired resource must have `.mov`; suffix and declared `mediaType` are routing
-checks, not authenticity checks.
+the paired resource must have `.mov`. A `primaryVideo` resource must have `.mp4`.
+Suffix and declared `mediaType` are routing checks, not authenticity checks.
 
 ## Fail-closed package resolution
 
@@ -142,10 +173,9 @@ is true:
   non-UTF-8, non-JSON, or not an object;
 - `schemaID` or `version` is missing or not the exact v1 value;
 - a complete producer field is missing or has the wrong JSON type;
-- `packageKind` is not `stillPhoto` or `livePhotoPackage`;
-- `resources` contains zero or multiple `primaryPhoto` descriptors;
-- a Still Photo declares a paired-video role, or a Live Photo does not declare
-  exactly one paired-video role;
+- `packageKind` is not `stillPhoto`, `livePhotoPackage`, or `tapVideo`;
+- the exact resource roles, cardinality, or ordering do not match the package
+  kind, including mixed photo/video primary roles;
 - a role is unknown, duplicated, or inconsistent with the package kind;
 - a descriptor has an empty filename/media type, names a missing entry, names
   the wrong supported media suffix, or resolves ambiguously; or
@@ -154,10 +184,13 @@ is true:
 
 Package-routing failure and artifact-verification failure are separate. If the
 sidecar resolves a structurally valid package, the verifier still MUST parse the
-primary photo's embedded manifest and proof, recompute the signed byte ranges,
-and, for a Live Photo, hash the complete declared MOV against
-`signedResources.pairedLivePhotoVideo`. A sidecar match alone never produces a
-valid verification result.
+original media's embedded manifest and proof and recompute the signed byte
+ranges. Live Photo also hashes the complete declared MOV against
+`signedResources.pairedLivePhotoVideo`. TAP Video follows exactly the raw MP4
+verification path, including its applicable container/KLV semantic gates.
+A sidecar match alone never produces a valid verification result. Zero depth is
+not a package-routing failure and must not prevent a valid signed video from
+being transported or verified.
 
 ## Bounded-input behavior
 
@@ -166,6 +199,6 @@ aggregate extracted bytes, and sidecar bytes before or during extraction. Exact
 safety budgets are consumer-local policy; they are not signed fields, wire-format
 limits, or evidence about the media.
 
-Only the root sidecar and supported photo/MOV candidates need to be
+Only the root sidecar and supported photo/MOV/MP4 candidates need to be
 materialized. Paths MUST be resolved as archive entries, not written to
 arbitrary filesystem locations.

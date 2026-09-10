@@ -54,6 +54,17 @@ an owner-approved compatible or breaking family revision.
 
 ## Current pre-release policy
 
+Before the first public release, `.tapnap` verification-export v1 is explicitly
+converged on the Still/Live Photo and TAP Video layouts in the current
+[transport definition](transport/tapnap-v1.md). Its sidecar identifier and
+`version: 1` remain unchanged despite adding the `tapVideo` package kind,
+`primaryVideo` role, and video-specific trust-boundary text. This is a bounded
+pre-release exception to the enumeration-change rule above, not an editorial
+claim that earlier photo-only revisions could handle video packages. Producers
+and consumers must adopt the same reviewed contract revision. Unknown kinds,
+roles, sidecar fields, and mismatched resource families still fail closed.
+The signed media's manifest, binding, proof, and container families do not change.
+
 The optional [`CALD`](containers/tap-video-container-v1.md#inline-calibration-extension-cald)
 and [`TAPCAMTELEMETRY1`](containers/tap-video-capture-telemetry-v1.md)
 extensions are adopted at their existing v1 definitions. This pre-release

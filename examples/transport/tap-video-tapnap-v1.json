@@ -1,0 +1,15 @@
+{
+  "schemaID": "urn:tapnap:tapcam:verification-export:v1",
+  "version": 1,
+  "packageKind": "tapVideo",
+  "resources": [
+    {
+      "role": "primaryVideo",
+      "filename": "original-video.mp4",
+      "mediaType": "public.mpeg-4"
+    }
+  ],
+  "warningLabels": [],
+  "warnings": [],
+  "trustBoundary": "This sidecar is not signed. Verify original video bytes against the TAP signature embedded in the video."
+}

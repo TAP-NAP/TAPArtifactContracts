@@ -598,18 +598,21 @@ later recordings.
 
 The canonical Share flow is:
 
-1. While the current item is being viewed, resolve its complete original
-   resource set for normal Viewer use. The Share control remains unavailable
-   while that original is absent, cloud-only, downloading from iCloud, or
-   incomplete. A preview, thumbnail, displayed Live Photo, video poster, or
-   first decoded video frame is not sufficient Share readiness.
-2. Open one lightweight app-owned format-selection surface anchored to the
-   Viewer's Share action. The same stable surface owns selection, preparation,
-   public-safe failure, and Retry; it is not a separate modal
-   page. On opening, check the actual ready original resource locally against
-   its embedded TAP proof and content binding before resolving the public
-   credential state. This local integrity gate must not contact the TAP
-   verification backend.
+1. Open one lightweight app-owned format-selection surface immediately when
+   the Viewer Share action is tapped, including while the complete original is
+   absent or downloading from iCloud. Freeze the selected media identity and
+   resource source at that tap; paging must not redirect a pending Share attempt.
+   Join the source's existing original-resource request and retain its result for
+   the attempt. A thumbnail, preview, poster, or first video frame does not prove
+   original readiness or integrity.
+2. Keep the same anchored surface, fixed status header, and two format rows
+   mounted during original loading, local validation, payload preparation, and
+   failure. Do not substitute skeletons or whole-surface loading/error content.
+   After the surface appears, check the complete original locally against its
+   embedded TAP proof and content binding. The local integrity gate must not
+   contact the TAP verification backend. A same-source pending signing transition
+   may replace an unsigned original only by acquiring the actual signed bytes
+   and checking them; a queue status change alone cannot mark old bytes Verified.
 3. Copy, package, or otherwise generate a Share-specific payload only after the
    user selects a format. Normal Viewer original-resource loading is not Share
    prewarming and must not pre-generate a package or persistent Share payload.
@@ -642,14 +645,15 @@ The app must not pre-generate packages, background-prewarm them, or keep a
 persistent share cache. The old direct-preparation/direct-system-share design
 and the separate app-owned modal format sheet are deprecated.
 
-The three public Share credential labels remain `Verified`, `Needs Retry`, and
-`Failed`:
+The fixed public Share status is `Preparing`, `Verified`, or `Failed`:
 
+- `Preparing` covers original-resource loading, local integrity checking, and a
+  private pending capture whose signing is still pending or retryable. It is not
+  a failure and must not hide or rearrange the two format options.
 - `Verified` means the complete original resource set passed the local TAP
   proof/content-binding integrity gate for the bytes that may be shared.
-- `Needs Retry` is emitted only by the app-private Pending Capture Queue for an
-  unsigned capture whose signing operation is pending or retryable.
-- `Failed` means a terminal queue failure or a complete resource whose embedded
+- `Failed` means an actual resource-access error, a terminal queue failure, or a
+  complete resource whose embedded
   proof/content binding is missing, malformed, incomplete, or does not match
   the actual bytes. A Photos/iCloud asset must not become `Failed` merely
   because its old Pending Capture Queue record no longer exists.
@@ -664,9 +668,13 @@ payload as verifiable. Direct image or video sharing remains available with an
 explicit warning that verifiability is not guaranteed. Live Photo `.tapnap`
 requires both the original photo and its signed paired MOV.
 
-Still and Live Photo `.tapnap` sharing and supported original-media sharing are
-current. TAP Video `.tapnap`, Sticker, and Link remain future items until their
-contracts are implemented.
+Each media type exposes exactly two format rows: TAPNAP Package and Share Image
+or Share Video. The second row shares the original file. Still/Live Photo and
+TAP Video packages follow the current transport contract; a video package
+preserves its one original signed MP4. Selected-format copying or ZIP progress
+and retryable preparation errors stay in that row's fixed subtitle area. A
+payload-preparation failure does not erase a successful original-integrity result
+from the header. No Sticker or Link placeholder is displayed.
 
 ### 5.4 Delete
 
