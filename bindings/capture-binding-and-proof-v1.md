@@ -1,8 +1,9 @@
 # Capture Binding and Proof v1
 
 This document defines the shared Still Photo, Live Photo, and TAP Video byte-
-binding and App Attest proof relationship. It does not define key registration,
-credential lifecycle, backend deployment, or product verification copy.
+binding and App Attest proof relationship. Key registration and server trust are
+defined in [BackendContract.md](../BackendContract.md); credential lifecycle and
+product verification copy are defined in [ProductContract.md](../ProductContract.md#6-credential-and-verification-ux).
 
 ## Family matrix
 
@@ -340,7 +341,8 @@ participation table differs.
     descriptor, family, ID, or timestamp no longer matches.
 
 App Attest key creation, attestation registration, credential recovery, and
-retry policy are producer/backend lifecycle concerns. Their prerequisite here
+retry policy follow [ProductContract.md](../ProductContract.md#6-credential-and-verification-ux)
+and [BackendContract.md](../BackendContract.md). Their prerequisite in this byte contract
 is only that `keyId` identifies a backend-registered App Attest public key and
 the producer can ask the corresponding system-protected private key to generate
 the assertion. The private key and raw media bytes never enter this repository.
@@ -433,7 +435,7 @@ Only after the local gate passes does the verifier submit the unchanged
 Steps 3 through 5 follow Apple's
 [server-side assertion validation](https://developer.apple.com/documentation/devicecheck/validating-apps-that-connect-to-your-server)
 relationship. This artifact contract fixes the capture-specific client data
-and byte relationship; the producer/backend contract owns counter persistence,
+and byte relationship; [BackendContract.md](../BackendContract.md) owns counter persistence,
 out-of-order submission policy, replay handling, endpoint responses, and audit.
 It therefore does not invent a stricter counter rule here.
 

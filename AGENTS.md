@@ -16,6 +16,9 @@ must define its subject without requiring application source or private records.
 - Keep product requirements, manifest/wire contracts, design rationale, and
   capability-specific validation here. Requirements describe intended behavior;
   implementation and measured results require source/tests and actual evidence.
+- This repository is the normative source for TAP product, artifact, and shared
+  API requirements. Consumer documentation and design references must not supply
+  missing rules or become prerequisites for understanding a contract here.
 - Valid zero-depth captures are retained, signed, and exported. Consumer depth
   assessment remains separate from artifact integrity.
 - Preserve exact identifiers, canonicalization, hash inputs, proof slots,

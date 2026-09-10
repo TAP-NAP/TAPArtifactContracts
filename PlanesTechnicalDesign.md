@@ -15,7 +15,7 @@ Analysis requires one bounded, validated input containing:
   Apple depth calibration as the local fallback; and
 - image orientation sufficient to map displayed taps to native depth pixels.
 
-`TAPDepthAnalysisInputValidation` rejects oversized images or maps, inconsistent
+Input validation rejects oversized images or maps, inconsistent
 sample counts, wholly invalid depth, and unusable calibration before geometry
 allocates per-pixel products. RGB, depth, calibration, and orientation must all
 describe the same captured resource; a preview or thumbnail is not an input.
@@ -82,8 +82,7 @@ capture-camera projection, rejects far-depth sentinels, and keeps interaction as
 a reversible view transform. It remains a colored point projection, not a mesh,
 scan, digital twin, or recovered world camera.
 
-Implementation entry points are `DepthAnalysisPlaneRegionRequestCoordinator`,
-`DepthAnalysisPlaneRegionDetector`, `TAPDepthGeometryProjector`, and
-`TAPPlaneEstimator`. `TAPDepthAnalysisPlaneRegionTests` protects projection,
-orientation, tilted/noisy planes, strictness, growth bounds, cache generation,
-cancellation, and the non-world-space claim boundary.
+To validate this design, check projection, orientation, tilted/noisy planes,
+strictness, growth bounds, cache generation, cancellation, and the non-world-space
+claim boundary. Source navigation and executed results belong with the consuming
+implementation; they do not define this algorithm.

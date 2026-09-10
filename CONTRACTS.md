@@ -1,18 +1,20 @@
 # Contract Index
 
-This page separates shared artifact obligations from product- or
-implementation-local behavior.
+This page indexes shared artifact obligations. [ProductContract.md](ProductContract.md)
+owns product behavior and [BackendContract.md](BackendContract.md) owns shared
+HTTP and server trust requirements. All three areas are defined in this
+repository; application source and design references are downstream consumers.
 
-| Area | Normative document | Owner here | Explicitly not owned here |
-| --- | --- | --- | --- |
-| Still Photo manifest | [`manifests/still-photo-v1.md`](manifests/still-photo-v1.md) | JSON fields, XMP identity, omission rules | Camera runtime and Photos export |
-| Live Photo manifest | [`manifests/live-photo-v1.md`](manifests/live-photo-v1.md) | JSON fields and paired-resource declaration | Live Photo capture/playback UX |
-| TAP Video manifest | [`manifests/tap-video-v1.md`](manifests/tap-video-v1.md) | JSON fields and manifest box identity | Recorder, pending queue, playback |
-| Capture binding and proof | [`bindings/capture-binding-and-proof-v1.md`](bindings/capture-binding-and-proof-v1.md) | Canonical bytes, family hash participation, producer signing, local reconstruction, App Attest assertion verification, signed resources | App Attest key lifecycle and server deployment |
-| Photo containers | [`containers/photo-containers-v1.md`](containers/photo-containers-v1.md) | XMP discovery and HEIC/JPEG proof-slot layout | ImageIO/Photos implementation |
-| TAP Video container and KLV | [`containers/tap-video-container-v1.md`](containers/tap-video-container-v1.md) | MP4 boxes and KLV v1 records, including optional inline calibration `CALD` | AVFoundation writer/reader implementation |
-| TAP Video capture telemetry | [`containers/tap-video-capture-telemetry-v1.md`](containers/tap-video-capture-telemetry-v1.md) | Optional independently versioned UUID, filtering observations and bounded device-motion samples | Capture scheduling, stabilization and display smoothing |
-| `.tapnap` transport | [`transport/tapnap-v1.md`](transport/tapnap-v1.md) | Archive and unsigned routing-sidecar conventions | Share UI and temporary-file lifecycle |
+| Area | Normative document | Responsibility |
+| --- | --- | --- |
+| Still Photo manifest | [`manifests/still-photo-v1.md`](manifests/still-photo-v1.md) | JSON fields, XMP identity, omission rules |
+| Live Photo manifest | [`manifests/live-photo-v1.md`](manifests/live-photo-v1.md) | JSON fields and paired-resource declaration |
+| TAP Video manifest | [`manifests/tap-video-v1.md`](manifests/tap-video-v1.md) | JSON fields and manifest box identity |
+| Capture binding and proof | [`bindings/capture-binding-and-proof-v1.md`](bindings/capture-binding-and-proof-v1.md) | Canonical bytes, family hash participation, producer signing, local reconstruction, App Attest assertion verification, signed resources |
+| Photo containers | [`containers/photo-containers-v1.md`](containers/photo-containers-v1.md) | XMP discovery and HEIC/JPEG proof-slot layout |
+| TAP Video container and KLV | [`containers/tap-video-container-v1.md`](containers/tap-video-container-v1.md) | MP4 boxes and KLV v1 records, including optional inline calibration `CALD` |
+| TAP Video capture telemetry | [`containers/tap-video-capture-telemetry-v1.md`](containers/tap-video-capture-telemetry-v1.md) | Optional independently versioned UUID, filtering observations and bounded device-motion samples |
+| `.tapnap` transport | [`transport/tapnap-v1.md`](transport/tapnap-v1.md) | Archive and unsigned routing-sidecar conventions |
 
 Synthetic JSON examples, the exact TAP Video vectors, and their expected
 outcomes are indexed in [examples/README.md](examples/README.md).

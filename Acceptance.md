@@ -568,6 +568,10 @@ is Blocked; Web/Simulator fixtures do not prove system deletion behavior.
 
 ## Visual parity
 
+Expected product behavior comes from [ProductContract §9](ProductContract.md#9-ui-design-source-of-truth)
+and its surface-specific sections. A visual reference records appearance for
+comparison; it does not supply missing product requirements.
+
 Compare an exact reference revision with a named native build, using a declared
 state × media × iPhone viewport matrix. Record locale, Dynamic Type, Reduce
 Motion, native icon semantics, tolerances and accepted platform differences
@@ -619,9 +623,11 @@ retains an explicit unverifiability warning. Still/Live Package needs complete
 valid resources. TAP Video Package contains the exact original signed MP4 and
 its routing sidecar, with zero-depth video included. The two format rows remain
 mounted through selected-row progress, failure and Retry; Sticker and Link
-placeholders are absent. Decode exported packages through the browser input
-resolver and run the existing media verification path; altered media must fail
-before a server request. Preserve raw image and video sharing.
+placeholders are absent. Decode exported packages under the
+[transport contract](transport/tapnap-v1.md) and run the
+[local artifact-binding gate](bindings/capture-binding-and-proof-v1.md#local-artifact-binding-gate);
+altered media must fail before a server request. Preserve raw image and video
+sharing.
 
 For fast and slow preparation, other options remain visible but disabled.
 Progress is monotonic, with no percentage, visible Cancel, delayed reveal,

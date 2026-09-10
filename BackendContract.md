@@ -1,29 +1,19 @@
 # App Attest Backend Contract
 
-Status: active cross-project server interface
+This document defines the shared App Attest backend interface: challenge
+issuance, credential registration and status, online request protection, and
+offline TAP capture-signature verification. Its wire and trust requirements do
+not depend on a particular client library or server implementation.
 
-TAPCamDemo client contract: [ProductContract §6](ProductContract.md#6-credential-and-verification-ux)
-
-Source links:
-
-- [AppAttestBackend](https://github.com/TAP-NAP/AppAttestKit/blob/main/Sources/AppAttestKit/AppAttestProtocols.swift)
-- [HTTPAppAttestBackend](https://github.com/TAP-NAP/AppAttestKit/blob/main/Sources/AppAttestKit/HTTPAppAttestBackend.swift)
-- [App Attest request/response models](https://github.com/TAP-NAP/AppAttestKit/blob/main/Sources/AppAttestKit/AppAttestModels.swift)
+[ProductContract §6](ProductContract.md#6-credential-and-verification-ux) defines
+the native app's credential lifecycle and user-visible behavior.
 
 ## Backend Boundary
 
-All server communication goes through `AppAttestBackend`:
-
-```swift
-func requestChallenge(_ request: AppAttestChallengeRequest) async throws -> AppAttestChallenge
-func registerAttestation(_ request: AppAttestRegistrationRequest) async throws -> AppAttestRegistrationResult
-func credentialStatus(_ request: AppAttestCredentialStatusRequest) async throws -> AppAttestServerCredentialStatus
-func recordAssertionResult(_ record: AppAttestAssertionRecord) async
-```
-
-`ChallengeProvider` is intentionally not a separate abstraction because
-challenge generation, attestation registration, credential status, and assertion
-audit data all belong to the same backend trust boundary.
+Challenge generation, attestation registration, credential status, and assertion
+audit data belong to the same backend trust boundary. Clients request these
+operations; the backend makes the trust decisions. Audit reporting is
+observability, not a substitute for validation of the protected request itself.
 
 ## Server Trust, Identity, And Replay Boundary
 
@@ -84,6 +74,16 @@ Response:
 The server must bind every challenge to purpose, credential name, expiry, and
 one-time use state.
 
+`challengeId` identifies that server-side state. `challenge` is the random byte
+payload the client hashes into the Apple App Attest operation:
+
+- Encode `challenge` as base64url without padding; decoded bytes must contain at
+  least 16 bytes. Production backends should use cryptographically random bytes.
+- `expiresAt` is optional but recommended. When present, it is an ISO 8601 UTC
+  timestamp parseable by Swift `.iso8601`, such as `2026-04-24T13:00:00Z`.
+- The client rejects an expired or too-short challenge before calling Apple App
+  Attest APIs. Omission of `expiresAt` does not remove server-side expiry.
+
 ## Attestation Endpoint
 
 `POST /app-attest/attestations`
@@ -111,6 +111,32 @@ Response:
 The server validates the Apple attestation object, app identifier, environment,
 challenge, public key, and initial sign counter before returning `accepted`.
 
+`attestationObject` is base64url without padding. A server that has marked the
+device or environment as untrusted should reject new registration instead of
+asking the client to create another key.
+
+This protocol does not define rollback when the server accepts registration but
+the client fails to save its Keychain credential metadata. Registration success
+therefore does not guarantee that local credential persistence also succeeded.
+
+## Credential Status Endpoint
+
+`POST /app-attest/credentials/status`
+
+Request:
+
+```json
+{
+  "credentialName": "photo_keyid",
+  "keyId": "apple-key-id"
+}
+```
+
+The response body is one JSON string: `"accepted"`, `"revoked"`, or `"unknown"`.
+`revoked` means the server no longer accepts that credential/key for assertions.
+A client may cache this state to avoid known-bad assertion work, but the server
+remains the trust authority. Revocation is not a device repair mechanism.
+
 ## Protected Business Requests
 
 The caller applies assertion metadata only to APIs that need App Attest:
@@ -127,6 +153,17 @@ The server verifies the assertion signature with the registered public key,
 checks the sign counter, confirms the challenge is valid and unused, confirms
 the credential name matches the registered key, and recomputes the request
 binding.
+
+The headers carry the credential lookup name, Apple key handle, server challenge
+identifier, assertion bytes, and request binding, respectively.
+`X-App-Attest-Assertion` and `X-App-Attest-Request-Binding` are base64url without
+padding. The request binding encodes method, path, sorted query items, body hash,
+challenge hash, and optional nonce. An absent body and an empty body have the
+same binding; distinguishing them requires a versioned contract change.
+
+Client-side assertion-result reporting is an observability hook, not proof that
+the protected business request was delivered or accepted. Production servers
+should record assertion use when they validate the protected request itself.
 
 ## TAPCam Capture Signature Verification
 

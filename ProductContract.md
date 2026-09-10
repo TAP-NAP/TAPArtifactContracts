@@ -15,8 +15,9 @@ The [artifact contracts](CONTRACTS.md) define the shared manifest, binding,
 proof, container, and transport formats. The [backend contract](BackendContract.md)
 defines App Attest HTTP and server trust. [Planes design](PlanesTechnicalDesign.md)
 explains photo geometry, and [acceptance procedures](Acceptance.md) describe
-validation by capability. Product definitions are complete here; a prototype
-illustrates the visible design without redefining these requirements.
+validation by capability. This repository defines the requirements. Source,
+tests, and visual references provide evidence only for the boundaries they
+exercise; they do not redefine those requirements.
 
 ### 1.1 Current runtime platform
 
@@ -28,11 +29,11 @@ device acceptance.
 
 iPad and iPad multitasking, Mac Catalyst or native macOS, running the iOS app
 as Designed for iPhone/iPad on Mac, and Apple Vision Pro compatibility are
-explicit non-goals for the current product. Current implementation, prototype,
+explicit non-goals for the current product. Current implementation, design,
 build, and acceptance work must not introduce conditional branches, layout
 adaptation, or validation obligations solely for those unsupported platforms.
 Any future platform expansion requires a separate owner-approved change, updated
-contract and prototype coverage, and its own build and device evidence.
+contract and design coverage, and its own build and device evidence.
 
 Xcode target settings express the repository build boundary; availability of
 an iOS app on Mac or Apple Vision Pro is also controlled by App Store Connect
@@ -625,8 +626,8 @@ bytes alive. A loaded flag is not a substitute for a retained resource.
 
 The former tool drawer, up-swipe Verify/drawer action, down-swipe dismissal,
 detents, and top-level Heatmap/Overlay/Mask buttons are **deprecated designs**.
-A Viewer redesign starts from the current interaction model and a reviewed
-prototype, rather than restoring these former controls.
+Viewer design changes preserve the current interaction model unless this
+contract explicitly revises it.
 
 Static-photo 3D means a native point projection for an eligible photo with
 usable depth and calibration. It does not mean mesh, scan, reconstruction,
@@ -778,8 +779,8 @@ silent trust fallback. The runtime accepts only the configured HTTPS base URL
 without an endpoint path; localhost, bare IP, cleartext HTTP, and `/healthz`-style
 endpoint URLs fail configuration. Debug uses App Attest development metadata and
 Release/TestFlight uses production; runtime metadata, entitlement, and build
-configuration must agree. `AppAttestKit` remains pinned until its revision is
-deliberately reviewed and advanced.
+configuration must agree. The App Attest client dependency remains pinned until
+its revision is deliberately reviewed and advanced.
 
 The explicit first-install Network row owns initial App Attest challenge,
 registration, and backend verification. Post-setup credential preparation is a
@@ -835,12 +836,10 @@ external media whose origin and credential state are not already owned by the
 current capture pipeline. External import and Verify are future work and need a
 separate product contract.
 
-The browser Live Photo verification flow remains an important cross-repository
-delivery boundary. Its artifact conventions are defined by the shared
-[contract index](CONTRACTS.md);
-TAPCamDemo retains its app-side behavior and handoff responsibility. Neither
-document claims that the external browser verifier is implemented inside
-TAPCamDemo.
+The browser Live Photo verification flow is separate from the app's capture and
+handoff behavior. Both consume the artifact conventions in the shared
+[contract index](CONTRACTS.md). The native app's local integrity check does not
+stand in for the browser verifier's complete verification flow.
 
 Fine-grained credential cooldown, retry windows, and stage-specific pause are
 future technical optimization. A public-release persistence policy must be an
@@ -891,11 +890,13 @@ publication, exact request ownership, cleanup, and public-safe diagnostics.
 
 ## 9. UI Design Source Of Truth
 
-TAPCam uses two complementary current constraints:
-
-1. This document owns functionality and state machines.
-2. The approved HTML/Web prototype owns visible component hierarchy, icon
-   identity, relative position, spacing, sizing, and simulated interaction.
+This contract owns functionality, state machines, and required visible behavior.
+The surface-specific sections above define controls, copy, state transitions,
+and system presentation boundaries. Visual references may illustrate component
+hierarchy, icon identity, relative position, spacing, sizing, and interaction;
+they cannot add or override product requirements. Intentional requirement
+changes belong here so implementations can be reviewed without another design
+repository.
 
 Visual continuity is a standing requirement for every UI surface. New features,
 changes, and reviews must check transitions, first presentation, asynchronous
@@ -907,49 +908,16 @@ resource reads, verification, or export preparation must not delay that response
 Loading feedback must not briefly obscure already usable content. Check the
 transition over time, not only its final screenshot.
 
-Executable visual artifacts live in `TAPCamPrototype/Prototype/`; its manifest
-records the approved revision and fixture scope. The native app does not retain
-a duplicate prototype implementation. Review those artifacts for visual
-comparison, not to discover product definitions missing from this contract.
+Visual comparisons use a named reference revision and native build, with the
+states, iPhone viewports, components, icons, and uncovered cases recorded under
+the [visual acceptance procedure](Acceptance.md#visual-parity). A visual reference
+can demonstrate hierarchy, geometry, icon identity, and simulated interaction.
+It cannot establish native lifecycle, real permissions/camera/depth/signing/Photos
+behavior, accessibility, performance, or physical-device acceptance.
 
-The Web prototype cannot redefine permissions, AVFoundation capability, camera
-readiness, or other runtime facts. SwiftUI implementation must satisfy both
-sources, followed by Simulator and physical-device acceptance. Prototype proof
-is limited to visible hierarchy, relative geometry, icon identity, responsive
-layout for approved iPhone viewports, and simulated interaction. It cannot prove
-native lifecycle, real permissions/camera/depth/signing/Photos behavior,
-accessibility, performance, or physical-device acceptance.
-
-Every intentional visible design change records the owner-approved scope,
-affected product states, prototype path/revision, components/icons, uncovered
-states, and relevant Simulator/device comparison. The design workflow is:
-
-```text
-Product Contract + owner-approved change
-    -> HTML/Web prototype revision
-    -> explicit product-owner visual approval
-    -> SwiftUI implementation
-    -> Simulator comparison
-    -> attended device acceptance when required
-```
-
-HTML/Web is the default visual specification; if the owner chooses another tool,
-its accepted result is synchronized into the Web prototype so there is still one
-active visual truth. Do not fake system permission dialogs or system-owned
-controllers: prototype only the app-owned before/after states and label the
-boundary. An urgent runtime or safety fix may precede prototype work only when it
-does not intentionally change UI or the owner explicitly approves the exception;
-any visible divergence must be synchronized before closure.
-
-If native platform behavior conflicts with the prototype, return to the owner
-for a decision rather than silently changing the product state machine or imitating
-a system control. Prototype approval never closes implementation, parity, or
-device evidence. The Viewfinder remains English; other app surfaces inherit the
-selected app locale unless an owner-approved product/copy change revises that
-boundary.
-
-Prototype coverage grows by bounded vertical slices rather than requiring a
-complete Web copy of TAPCam before native work. Each slice reads the applicable
-product states from this contract, records uncovered states explicitly, and
-becomes implementation authority only for its approved visible hierarchy and
-simulated interaction.
+System permission dialogs and system-owned controllers remain native. App-owned
+surfaces show the before/after states and respect that presentation boundary;
+they do not imitate system controls. A platform conflict must be resolved against
+these requirements without silently changing the product state machine. The
+Viewfinder remains English; other app surfaces inherit the selected app locale
+unless this contract explicitly revises that boundary.
