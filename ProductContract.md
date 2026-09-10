@@ -153,6 +153,16 @@ only after both readiness groups below are ready.
 Session configuration alone is insufficient. A loading or readiness surface
 must remain until all of the conditions above hold.
 
+Camera capability discovery belongs to this initialization stage. Persist the
+supported format candidates and reusable selection facts for the current app
+update, OS build, and device. Later launches bind those facts to the current
+native camera objects; normal camera use queries the prepared capability
+matrix instead of enumerating and scoring formats again. A missing, stale,
+corrupt, or incompatible snapshot requires rebuilding after the Resource
+Initialization surface is committed, off the main actor. Native session
+creation and necessary configuration changes still occur at runtime; reusable
+inputs and outputs stay installed while the requested capture path is unchanged.
+
 **TAP Library catalog ready** requires the first usable identity/order metadata
 snapshot. A successful empty snapshot is usable. The gate does not wait for or
 decode the media represented by that snapshot.
@@ -191,7 +201,9 @@ readiness groups have both succeeded.
 - An interrupted or abnormally incomplete run leaves the marker absent or stale
   so the next launch remains in Resource Initialization.
 - Ordinary later launches whose marker exactly matches the current update and
-  schema generation silently skip Resource Initialization.
+  schema generation silently skip Resource Initialization when their capability
+  snapshot can be restored. An unusable snapshot invalidates local initialization
+  readiness and re-enters the same gate without replaying setup or permissions.
 - If Camera or Photos changes later to an unusable state, the app enters the
   app-owned **Required Permission Check** page. That page does not replay
   first-install setup and automatically re-evaluates the startup route after a
