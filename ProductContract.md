@@ -716,9 +716,12 @@ not Apple attestation trust, registered-key authenticity, freshness, or replay
 protection. The cross-project server trust and HTTP requirements remain in
 [App Attest BackendContract.md](BackendContract.md).
 
-Release Settings presents `Photo Integrity` as one `Protection Readiness` row
-with `Not Ready`, `Preparing`, `Ready`, or `Preparation Failed`, plus Prepare or
-Retry where applicable. It exposes no App Attest terminology, backend URL,
+Release Settings presents a compact top row labeled `Reference Image status`
+(`参考影像状态` in Simplified Chinese). A green dot means Ready, a red dot means
+Preparation Failed, a gray dot means Not Ready, and a progress indicator means
+Preparing. Prepare or Retry appears where applicable; accessibility exposes the
+state in words. The same row links to the online verifier. It exposes no App
+Attest terminology, backend URL,
 credential/key ID, raw error, or proof. Public diagnostics use fixed error
 domain/code and scalar outcomes; URLs, paths, identifiers, proof/assertion bodies,
 backend responses, and localized error text stay private. Debug-only controls do
@@ -774,12 +777,10 @@ resource set. It must not turn that claim into proof that:
 - physical depth is correct;
 - the capture is fresh or protected against every replay.
 
-`Photo Integrity = Ready` means the protection capability is prepared; it is
-not a new cryptographic verification result. The Simplified Chinese translation
-`照片保真` is deprecated because it can imply visual quality or real-world
-authenticity. A replacement term requires an explicit copy decision before it
-is synchronized to localization, prototypes, marketing claims, and acceptance
-assets.
+Ready in `Reference Image status` (`参考影像状态`) means the device's protection
+capability is prepared; it is not a new cryptographic verification result for an
+individual image. The former Simplified Chinese label `照片保真` is retired
+because it can imply visual quality or real-world authenticity.
 
 ## 8. Evidence And Acceptance
 
