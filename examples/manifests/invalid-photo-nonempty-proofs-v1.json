@@ -10,97 +10,6 @@
   "payload": {
     "id": "00000000-0000-4000-8000-000000000003",
     "capturedAt": "2030-01-02T03:04:07.890Z",
-    "sessionMode": "singleCam",
-    "pairingMode": "rgbWithApplePairedDepth",
-    "alignmentStatus": "sameCapturePipeline",
-    "sourceAPIs": {
-      "photo": "AVCapturePhotoOutput / AVCapturePhoto",
-      "depth": "AVCapturePhoto.depthData / AVDepthData",
-      "camera": "AVCaptureDevice / AVCaptureDevice.Format",
-      "location": "CLLocationManager.requestLocation / CLLocation"
-    },
-    "capture": {
-      "resolvedSettingsUniqueID": 103,
-      "requestedCodec": "hvc1",
-      "depthDataDeliveryEnabled": true,
-      "embedsDepthDataInPhoto": true,
-      "depthDataFiltered": true,
-      "depthAvailability": "available",
-      "photoQualityPrioritization": "quality"
-    },
-    "rgbSource": {
-      "id": "synthetic-rgb-source",
-      "displayName": "Synthetic Source",
-      "deviceType": "AVCaptureDeviceTypeBuiltInWideAngleCamera",
-      "deviceName": "Synthetic Camera",
-      "position": "back",
-      "sourceKind": "physical",
-      "requestedReferenceZoomFactor": 1
-    },
-    "depthSource": {
-      "selectionMode": "auto",
-      "compatibilityStatus": "compatible"
-    },
-    "pairing": {
-      "mode": "rgbWithApplePairedDepth",
-      "status": "compatible",
-      "requiresMultiCam": false,
-      "releaseAllowed": true,
-      "alignmentStatus": "sameCapturePipeline"
-    },
-    "zoom": {
-      "depthSafeRanges": [],
-      "isContinuous": false,
-      "isDiscrete": true
-    },
-    "crop": {
-      "mode": "previewOnly",
-      "cropRectNormalized": {
-        "x": 0,
-        "y": 0,
-        "width": 1,
-        "height": 1
-      },
-      "destructiveFinalCropApplied": false,
-      "sourceAPI": "AVCaptureVideoPreviewLayer.metadataOutputRectConverted(fromLayerRect:)"
-    },
-    "resolvedSession": {
-      "mode": "singleCam",
-      "resolvedCaptureDeviceID": "synthetic-device-id",
-      "resolvedCaptureDeviceType": "AVCaptureDeviceTypeBuiltInWideAngleCamera",
-      "resolvedCaptureDeviceName": "Synthetic Camera"
-    },
-    "selectedDepthCamera": {
-      "id": "none",
-      "displayName": "None",
-      "deviceType": "AVCaptureDeviceTypeBuiltInWideAngleCamera",
-      "deviceName": "Synthetic Camera",
-      "position": "back"
-    },
-    "selectedZoom": {
-      "id": "zoom-unknown",
-      "displayName": "unknown",
-      "zoomFactor": 1
-    },
-    "photoLens": {
-      "requestedLensID": "synthetic-rgb-source",
-      "requestedDisplayName": "Synthetic Source",
-      "requestedFocalLengthLabel": "24mm",
-      "labelSource": "syntheticFixture+releaseRawVideoZoomFactor",
-      "requestedZoomFactor": 1,
-      "requestedReferenceZoomFactor": 1,
-      "position": "back",
-      "resolvedCaptureDeviceType": "AVCaptureDeviceTypeBuiltInWideAngleCamera",
-      "resolvedCaptureDeviceName": "Synthetic Camera"
-    },
-    "depthBackend": {
-      "selectionMode": "auto",
-      "resolvedBackendID": "synthetic-device-id",
-      "resolvedBackendDisplayName": "Synthetic Camera",
-      "resolvedCaptureDeviceType": "AVCaptureDeviceTypeBuiltInWideAngleCamera",
-      "resolvedCaptureDeviceName": "Synthetic Camera",
-      "actualVideoZoomFactor": 1
-    },
     "camera": {
       "localizedName": "Synthetic Camera",
       "uniqueID": "synthetic-device-id",
@@ -138,9 +47,6 @@
         "sensingMethod": "singleCameraComputationalOrUnknown",
         "lidarParticipation": "notAsserted"
       }
-    },
-    "alignment": {
-      "depthToImage": "appleAuxiliaryDepthNative"
     },
     "location": null,
     "software": {

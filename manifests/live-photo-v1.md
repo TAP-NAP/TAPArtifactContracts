@@ -11,16 +11,13 @@ owns the signed resources and complete/primary-only verification scopes.
 
 ## Family identity
 
-Producers write the following family and encoding values.
+Live Photo inherits the [Still Photo schema](still-photo-v1.md#family-identity),
+replacing only these two values:
 
 | Field | Required JSON value |
 | --- | --- |
 | `schema.id` | `urn:tapnap:tapcam:live-photo-manifest:v1` |
-| `schema.version` | integer `1` |
 | `schema.mediaType` | `application/vnd.tapnap.live-photo-manifest+json;version=1` |
-| `schema.xmpNamespaceURI` | `urn:tapnap:tapcam:depth:1.0` |
-| `schema.xmpPrefix` | `tapdepth` |
-| `schema.xmpManifestPath` | `tapdepth:Manifest` |
 
 Producers write top-level `schema`, `payload`, and empty `proofs`.
 

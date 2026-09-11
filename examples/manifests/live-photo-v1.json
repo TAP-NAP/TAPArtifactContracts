@@ -10,118 +10,6 @@
   "payload": {
     "id": "00000000-0000-4000-8000-000000000002",
     "capturedAt": "2030-01-02T03:04:06.789Z",
-    "sessionMode": "singleCam",
-    "pairingMode": "rgbWithApplePairedDepth",
-    "alignmentStatus": "sameCapturePipeline",
-    "sourceAPIs": {
-      "photo": "AVCapturePhotoOutput / AVCapturePhoto",
-      "depth": "AVCapturePhoto.depthData / AVDepthData",
-      "camera": "AVCaptureDevice / AVCaptureDevice.Format",
-      "location": "CLLocationManager.requestLocation / CLLocation"
-    },
-    "capture": {
-      "resolvedSettingsUniqueID": 102,
-      "requestedCodec": "jpeg",
-      "depthDataDeliveryEnabled": true,
-      "embedsDepthDataInPhoto": true,
-      "depthDataFiltered": true,
-      "depthAvailability": "unavailable",
-      "photoQualityPrioritization": "quality"
-    },
-    "rgbSource": {
-      "id": "synthetic-rgb-source",
-      "displayName": "Synthetic Wide Source",
-      "deviceType": "AVCaptureDeviceTypeBuiltInDualWideCamera",
-      "deviceName": "Synthetic Camera",
-      "position": "back",
-      "sourceKind": "virtual",
-      "requestedReferenceZoomFactor": 1
-    },
-    "depthSource": {
-      "selectionMode": "auto",
-      "requestedDepthSourceID": "dualWideDisparity",
-      "requestedDepthSourceDisplayName": "Synthetic Dual-Wide Disparity",
-      "requestedDepthSourceKind": "dualWideDisparity",
-      "compatibilityStatus": "compatible",
-      "resolvedDeviceID": "synthetic-live-device-id",
-      "resolvedDeviceType": "AVCaptureDeviceTypeBuiltInDualWideCamera",
-      "resolvedDeviceName": "Synthetic Camera"
-    },
-    "pairing": {
-      "mode": "rgbWithApplePairedDepth",
-      "status": "compatible",
-      "requiresMultiCam": false,
-      "releaseAllowed": true,
-      "alignmentStatus": "sameCapturePipeline"
-    },
-    "zoom": {
-      "requestedZoomID": "zoom-1x",
-      "requestedZoomFactor": 1,
-      "actualVideoZoomFactor": 1,
-      "depthSafeRanges": [
-        {
-          "lowerBound": 1,
-          "upperBound": 1.5
-        }
-      ],
-      "isContinuous": true,
-      "isDiscrete": false
-    },
-    "crop": {
-      "mode": "previewOnly",
-      "cropRectNormalized": {
-        "x": 0,
-        "y": 0.125,
-        "width": 1,
-        "height": 0.75
-      },
-      "destructiveFinalCropApplied": false,
-      "sourceAPI": "AVCaptureVideoPreviewLayer.metadataOutputRectConverted(fromLayerRect:)"
-    },
-    "resolvedSession": {
-      "mode": "singleCam",
-      "resolvedCaptureDeviceID": "synthetic-live-device-id",
-      "resolvedCaptureDeviceType": "AVCaptureDeviceTypeBuiltInDualWideCamera",
-      "resolvedCaptureDeviceName": "Synthetic Camera",
-      "activePrimaryConstituentDeviceType": "AVCaptureDeviceTypeBuiltInWideAngleCamera",
-      "activePrimaryConstituentDeviceName": "Synthetic Wide Constituent"
-    },
-    "selectedDepthCamera": {
-      "id": "dualWideDisparity",
-      "displayName": "Synthetic Dual-Wide Disparity",
-      "deviceType": "AVCaptureDeviceTypeBuiltInDualWideCamera",
-      "deviceName": "Synthetic Camera",
-      "position": "back"
-    },
-    "selectedZoom": {
-      "id": "zoom-1x",
-      "displayName": "1x",
-      "zoomFactor": 1
-    },
-    "photoLens": {
-      "requestedLensID": "synthetic-rgb-source",
-      "requestedDisplayName": "Synthetic Wide Source",
-      "requestedFocalLengthLabel": "24mm",
-      "labelSource": "syntheticFixture+releaseRawVideoZoomFactor",
-      "requestedZoomFactor": 1,
-      "requestedReferenceZoomFactor": 1,
-      "requestedEquivalentFocalLength35mmMillimeters": 24,
-      "position": "back",
-      "resolvedCaptureDeviceType": "AVCaptureDeviceTypeBuiltInDualWideCamera",
-      "resolvedCaptureDeviceName": "Synthetic Camera",
-      "resolvedActivePrimaryConstituentDeviceType": "AVCaptureDeviceTypeBuiltInWideAngleCamera",
-      "resolvedActivePrimaryConstituentDeviceName": "Synthetic Wide Constituent"
-    },
-    "depthBackend": {
-      "selectionMode": "auto",
-      "requestedBackendID": "dualWideDisparity",
-      "requestedBackendDisplayName": "Synthetic Dual-Wide Disparity",
-      "resolvedBackendID": "dualWideDisparity",
-      "resolvedBackendDisplayName": "Synthetic Dual-Wide Disparity",
-      "resolvedCaptureDeviceType": "AVCaptureDeviceTypeBuiltInDualWideCamera",
-      "resolvedCaptureDeviceName": "Synthetic Camera",
-      "actualVideoZoomFactor": 1
-    },
     "camera": {
       "localizedName": "Synthetic Camera",
       "uniqueID": "synthetic-live-device-id",
@@ -174,9 +62,6 @@
         "sensingMethod": "multiCameraStereoOrComputational",
         "lidarParticipation": "notAsserted"
       }
-    },
-    "alignment": {
-      "depthToImage": "unavailable"
     },
     "location": null,
     "software": {

@@ -59,10 +59,13 @@ contract commit together:
   packages. Safe paths and unambiguous recognized resource roles are required;
   unsigned descriptive fields and unknown roles do not determine authenticity.
 - Encoding/decoding and signature acceptance are separate. Content properties
-  and decoder support no longer gate signing or verification. Existing producer
-  field representations, identifiers, hash inputs, proof layouts, and canonical
-  signing-message algorithms remain unchanged. This changes acceptance behavior,
-  not merely editorial wording.
+  and decoder support no longer gate signing or verification. Identifiers, hash
+  input definitions, proof layouts, and canonical signing-message algorithms
+  remain unchanged. This changes acceptance behavior, not merely editorial wording.
+- Still/Live manifests retain capture identity, actual camera/photo/depth data,
+  location, software and the Live companion description. Duplicated capture-plan
+  and UI-selection snapshots are removed; camera facing is `camera.position`.
+  Stored payloads remain hashed as their original bytes.
 - Optional [`CALD`](containers/tap-video-container-v1.md#inline-calibration-extension-cald)
   and [`TAPCAMTELEMETRY1`](containers/tap-video-capture-telemetry-v1.md) extensions
   are adopted with their existing bytes and semantics, including `TVER=1`.
