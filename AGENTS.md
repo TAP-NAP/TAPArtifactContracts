@@ -21,9 +21,11 @@ must define its subject without requiring application source or private records.
   missing rules or become prerequisites for understanding a contract here.
 - Valid zero-depth captures are retained, signed, and exported. Consumer depth
   assessment remains separate from artifact integrity.
-- Preserve exact identifiers, canonicalization, hash inputs, proof slots,
-  resource sets, and fail-closed decisions. Follow the versioning policy for
-  semantic/wire changes; editorial changes do not advance a consumer pin.
+- Preserve signing identifiers, signing-message canonicalization, exact blob
+  hash inputs, proof slots, and bound resource sets. Data decoding, sample
+  properties, and metadata writing style must not gate signature acceptance.
+  Follow the versioning policy for wire changes; editorial changes do not
+  advance a consumer pin.
 - Define fields, types, units, coordinates, and omission/null behavior in their
   owning contract. Keep examples synthetic and routing sidecars unsigned.
 - Keep media, credentials, assertions, precise locations, application code,

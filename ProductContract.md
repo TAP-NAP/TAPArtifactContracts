@@ -354,9 +354,10 @@ The executable capture path has these fail-closed boundaries:
   and capability signatures before control writes, and never reinterprets a
   semantic FOV label as raw zoom.
 - Output selection resolves one reviewed profile against the live photo output
-  before graph configuration. Settings, packager, manifest, and validation use
-  that same resolved container, codec, dimensions, quality, and depth state;
-  unavailable combinations fail instead of silently falling back.
+  before graph configuration. Settings and capture use that profile and record
+  the available output observations in metadata. Unsupported native operations
+  fail before submission; their expected properties do not become later
+  signature or export requirements for bytes already written.
 - The UI requests plans and presents public-safe values; it does not construct
   capture plans, mutate AVFoundation, receive proof/key material, or expose raw
   device, capture, Photos, path, URL, or error values.
@@ -391,58 +392,18 @@ TAP Video's current product contract includes:
 - RGB-colored point-cloud playback with spatial history when successive observations can be aligned;
 - both Standard and eligible PRO Video capture paths.
 
-No-depth TAP Video follows the same non-blocking principle as still photos:
+A valid TAP Video with zero or missing depth retains its RGB/audio, records the
+coverage, and follows normal signing/export with a non-blocking depth warning.
 
-- retain the valid RGB/audio artifact;
-- record zero or missing depth coverage truthfully;
-- sign and export the artifact;
-- show a non-blocking depth-unavailable warning;
-- do not turn missing depth alone into a terminal capture failure.
-
-Depth presence and depth quality are separate from capture integrity. Consumers
-may assess depth semantics; that assessment is not a prerequisite for the app
-to sign or export a valid recording. Container, identity, declared facts, proof,
-and content-binding checks still apply to the exact outgoing bytes.
-
-TAP Video finalization is one ordered local transaction: finish media, inspect
-the finalized tracks, construct the shared-contract metadata/container, validate
-the artifact against those observed facts, then atomically publish it into the
-Pending Capture Queue. One capture publishes one original MP4 with no durable
-preview movie, JSON sidecar, ZIP, or Debug derivative. Requested settings never
-substitute for finalized track facts; container finalization must not rewrite
-existing media tables or offsets. Parsing, hashing, consistency, calibration,
-depth, timeline, and gap checks remain bounded and streaming rather than loading
-the complete MP4 into `Data`. The current 180-second UI stop is recording policy,
-not a format or decoder limit.
-
-Pending signing uses the exact finalized bytes. Before signing, local binding
-reconstruction must pass; after proof insertion and again after Photos original
-readback, identity and local binding are revalidated. Photos playback success or
-a filename is only an index hint. Missing depth is not an integrity failure, and
-depth health remains an optional semantic gate after local binding succeeds.
-
-TAP Video 3D projects synchronized depth frames into an RGB-colored point cloud
-when depth, calibration and color registration are usable. During continuous
-3D playback, image correspondences and original depth estimate relative camera
-motion so selected past observations can remain in a shared local space.
-Gestures can revisit those observations without moving the video playhead.
-History is accumulated and shown during appreciable camera movement. With a
-stationary camera, default playback shows the current frame alone; changing
-objects do not create an ever-growing trail. User gestures can reveal retained
-history even after the camera stops. The default view follows the current frame
-and keeps its image center at screen center; frame updates preserve manual
-viewing adjustments. Historical points retain their original RGB mapping and
-brightness, with the same clear point style as the current frame and no fading
-or softening. During default playback, old points in the current capture view
-are hidden; manual exploration can reveal them. This bounded keyframe preview
-retains past observations rather than asserting that moving objects remain there.
-If a saved distortion lookup folds peripheral rays toward the center, display
-uses a pinhole approximation with the saved intrinsics for that frame. This
-does not correct or replace the source depth or establish geometric accuracy.
-During missing frames or unavailable depth, the visual display retains the last
-valid point cloud until a new one is ready; RAW RGB/audio remain available.
-AirPlay, Picture in Picture,
-and background playback are outside the product scope.
+After media writing completes, TAP Video finalization reads the required
+postflight track facts, writes the manifest and proof slot, and atomically
+publishes one MP4 into the Pending Capture Queue. Writer or required postflight
+read failure follows recording failure cleanup. Requested settings do not
+replace observed facts. No durable preview movie, JSON sidecar, ZIP or Debug
+derivative is published, and existing media tables/offsets are not rewritten.
+File work is bounded and streaming. The 180-second UI stop is recording policy,
+not a format limit. AirPlay, Picture in Picture and background playback remain
+outside the product scope. Viewer behavior is defined in §5.2.
 
 The single-camera AVCapture recording path remains authoritative. Core Motion
 records bounded device attitude, angular velocity, gravity and user acceleration
@@ -480,16 +441,14 @@ and signing bytes come only from the reviewed artifact-contract families. The
 producer encodes that contract but never creates a local variant. Photo and Live
 Photo packaging preserves the primary pixels and Apple auxiliary depth without
 a decode/re-encode pass. The shutter-time artifact contains a proof-free manifest
-and the fixed empty proof slot; later signing binds the exact canonical payload
+and the fixed empty proof slot; later signing binds the exact embedded payload
 and media resources, fills only that slot, and never hashes a re-encoded manifest.
 
-Every signed Still, Live Photo, or TAP Video path has a final-byte gate before
-Photos save. It reopens the exact outgoing bytes and fails closed on container,
-schema/canonical form, manifest identity, source/profile facts, resource set,
-proof-slot cardinality, digest/content binding, or declared-versus-actual depth
-mismatch. A Live Photo validates its paired MOV as part of the same resource set.
-No queue status, filename, earlier validation, or successful signing call may
-bypass this gate, and Photos writers accept no unsigned artifact.
+Before Photos save and after original-resource readback, every signed Still,
+Live Photo and TAP Video runs the shared
+[local artifact-binding check](bindings/capture-binding-and-proof-v1.md#local-artifact-binding-gate).
+Queue status, filenames and an earlier successful signing call cannot replace
+that check. Photos writers accept no unsigned artifact.
 
 ## 4. Locked Camera
 
@@ -645,25 +604,37 @@ original bytes; it does not re-fetch them, call backend Verify, pre-generate a
 package, or persist a Share cache.
 
 Video 3D uses the same playhead, original-resource lease and cancellation
-boundaries. Projection and temporal display smoothing run off the MainActor
-with bounded retained frames. Smoothing does not bridge declared depth gaps,
-calibration/layout changes, seeks or stale requests; its derived pixels and
-points never replace stored evidence. The Viewer adds no Settings entry.
-The 3D presentation retains the same item's last valid displayed frame while
-waiting for another usable frame, including during a depth gap or failed frame
-update. It must not flash a blank view or a no-data banner on those updates.
-If no frame has yet been displayed, it waits without an error banner. A new
-media item clears the previous item's point cloud. Holding a displayed frame
-does not fill signed gaps, advance that frame's sample timestamp, or establish
-that its geometry is accurate at the current playhead.
-Video point-cloud gestures follow the photo viewer's fixed-camera interaction;
-the first drag must not change zoom, and frame updates preserve the user's view.
-Spatial history accumulates from the current 3D playback entry point. Seeking,
-leaving 3D, changing the source, or resetting processing starts a new history.
-An unsuccessful frame-to-frame alignment hides spatial history while the usable
-current frame continues to update. It preserves the last successfully aligned
-raw observation for the next estimate; held frames and temporally smoothed
-depth are not inputs to motion estimation.
+boundaries. It projects usable depth, calibration and color registration into
+an RGB-colored point cloud. Projection and temporal display smoothing run off
+the MainActor with bounded retained frames. Smoothing does not bridge gaps,
+calibration/layout changes, seeks or stale requests; derived points never replace
+stored evidence. The Viewer adds no Settings entry.
+
+The same item's last valid cloud remains visible during gaps or failed updates,
+without a blank flash or no-data banner. Before the first usable frame, it waits
+without an error banner. A new item clears the old cloud. RAW RGB/audio remain
+available. Holding a frame does not invent a stored sample or update its timestamp.
+If a saved distortion lookup folds peripheral rays toward the center, display
+uses a pinhole approximation with the saved intrinsics for that frame; this does
+not correct source depth or establish geometric accuracy.
+
+Image correspondences and original depth estimate relative camera motion so
+selected, bounded past observations can share a local space. History accumulates
+during appreciable camera movement. With a stationary camera, default playback
+shows only the current frame; changing subjects do not create a growing trail.
+The default view follows the current image center. Historical points retain
+their original RGB mapping, brightness and clear point style, without fading.
+Old points inside the current capture view are hidden during default playback;
+gestures can revisit retained observations without moving the playhead, even
+after the camera stops. Video gestures follow photo 3D's fixed-camera interaction:
+the first drag does not change zoom, and frame updates preserve the user's view.
+
+Seeking, leaving 3D, changing the source or resetting processing starts new
+history. Unsuccessful alignment hides history while the current usable frame
+keeps updating; the last successfully aligned raw observation is retained for
+the next estimate. Held and temporally smoothed frames are not motion-estimation
+inputs. This preview retains observations, not a claim that moving objects remain
+in their past locations.
 The existing app Settings owns both Debug preferences. Changing the Filtering preference
 cannot reconfigure an active recording; the sheet explains that it affects
 later recordings.
@@ -835,11 +806,6 @@ A true in-app Verify workflow becomes relevant only if a future product accepts
 external media whose origin and credential state are not already owned by the
 current capture pipeline. External import and Verify are future work and need a
 separate product contract.
-
-The browser Live Photo verification flow is separate from the app's capture and
-handoff behavior. Both consume the artifact conventions in the shared
-[contract index](CONTRACTS.md). The native app's local integrity check does not
-stand in for the browser verifier's complete verification flow.
 
 Fine-grained credential cooldown, retry windows, and stage-specific pause are
 future technical optimization. A public-release persistence policy must be an

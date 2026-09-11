@@ -189,6 +189,6 @@ Valid response:
 }
 ```
 
-Invalid semantic verification returns HTTP 200 with `status: "invalid"` and a
+Invalid App Attest verification returns HTTP 200 with `status: "invalid"` and a
 machine-readable `reason`. A backend `valid` response never replaces the
 caller's already-passing local artifact-binding scope.

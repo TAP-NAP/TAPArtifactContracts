@@ -5,9 +5,10 @@
 Every public-format and security-schema family owns its own version. The fact
 that several current families end in `v1` does not make them interchangeable.
 
-A consumer MUST route by the complete family identifier. It MUST reject an
-unknown identifier, a structurally different family, or a manifest/binding pair
-whose families do not match. It MUST NOT guess a family from similar fields.
+A consumer routes by the complete family identifier, without guessing from
+similar fields. Verification requires supported, matching manifest, binding,
+and proof families. An unsupported media extension affects decoding; its covered
+bytes still participate in verification.
 
 Current families include, but are not limited to:
 
@@ -26,11 +27,9 @@ Current families include, but are not limited to:
 
 ## Reviewed contract revisions
 
-A reviewed Git commit identifies one publication of these documents. It is not
-a global wire-format version and may document several independent v1 families
-at once. A future repository tag MAY name a reviewed commit, but consumers MUST
-pin the exact reviewed commit rather than infer a wire-format version from a
-tag name.
+A reviewed Git commit identifies a publication of these documents, not a global
+wire-format version. Consumers pin that commit to adopt the documented behavior
+across the independent families.
 
 ## Change classification
 
@@ -46,31 +45,27 @@ already permits them:
 - changing which resources are bound or which schema-family combinations are
   accepted.
 
-Editorial clarification is non-breaking only when it does not change any
-producer byte or consumer decision. If an apparent clarification reveals that
-an implementation differs, that downstream repository must record the mismatch
-without redefining this contract. Changing the shared decision still requires
-an owner-approved compatible or breaking family revision.
+An editorial clarification changes neither producer bytes nor consumer decisions.
+An implementation mismatch does not redefine the contract; a shared behavior
+change requires owner approval and a reviewed revision.
 
 ## Current pre-release policy
 
-Before the first public release, `.tapnap` verification-export v1 is explicitly
-converged on the Still/Live Photo and TAP Video layouts in the current
-[transport definition](transport/tapnap-v1.md). Its sidecar identifier and
-`version: 1` remain unchanged despite adding the `tapVideo` package kind,
-`primaryVideo` role, and video-specific trust-boundary text. This is a bounded
-pre-release exception to the enumeration-change rule above, not an editorial
-claim that earlier photo-only revisions could handle video packages. Producers
-and consumers must adopt the same reviewed contract revision. Unknown kinds,
-roles, sidecar fields, and mismatched resource families still fail closed.
-The signed media's manifest, binding, proof, and container families do not change.
+The following owner-approved changes are adopted before the first public release
+without advancing version numbers. Producers and consumers adopt the reviewed
+contract commit together:
 
-The optional [`CALD`](containers/tap-video-container-v1.md#inline-calibration-extension-cald)
-and [`TAPCAMTELEMETRY1`](containers/tap-video-capture-telemetry-v1.md)
-extensions are adopted at their existing v1 definitions. This pre-release
-adoption does not change their bytes or semantics, `TVER=1`, manifest and
-content-binding families, or any schema-version value. Consumers adopt them by
-pinning the reviewed contract commit; no family version is advanced.
+- [`.tapnap` v1](transport/tapnap-v1.md) includes Still/Live Photo and TAP Video
+  packages. Safe paths and unambiguous recognized resource roles are required;
+  unsigned descriptive fields and unknown roles do not determine authenticity.
+- Encoding/decoding and signature acceptance are separate. Content properties
+  and decoder support no longer gate signing or verification. Existing producer
+  field representations, identifiers, hash inputs, proof layouts, and canonical
+  signing-message algorithms remain unchanged. This changes acceptance behavior,
+  not merely editorial wording.
+- Optional [`CALD`](containers/tap-video-container-v1.md#inline-calibration-extension-cald)
+  and [`TAPCAMTELEMETRY1`](containers/tap-video-capture-telemetry-v1.md) extensions
+  are adopted with their existing bytes and semantics, including `TVER=1`.
 
 Superseded development identifiers and cross-family combinations are
 unsupported. Consumers fail closed instead of silently accepting a legacy alias

@@ -1,17 +1,17 @@
 # TAP Video Manifest v1
 
-Status: v1 producer contract
+Status: v1 data representation
 Artifact: one TAP Video MP4
 Example: [`../examples/manifests/tap-video-v1.json`](../examples/manifests/tap-video-v1.json)
 
-This document defines the complete manifest written for one TAP Video v1
-artifact. The JSON is embedded in the MP4; it is not a `.tapnap` sidecar. MP4
-placement and the timed-depth track are defined in
-[`../containers/tap-video-container-v1.md`](../containers/tap-video-container-v1.md).
+This document defines the producer's manifest fields, embedded in one MP4.
+[TAP Video Container](../containers/tap-video-container-v1.md) defines byte
+layout and decoding; [Capture Binding and Proof](../bindings/capture-binding-and-proof-v1.md)
+defines hashing and verification.
 
 ## Family and serialization
 
-The three schema values are an indivisible family identity:
+Producers write these schema values:
 
 | JSON path | Required value |
 | --- | --- |
@@ -19,26 +19,16 @@ The three schema values are an indivisible family identity:
 | `schema.version` | integer `1` |
 | `schema.mediaType` | `application/vnd.tapnap.video-manifest+json;version=1` |
 
-A consumer MUST match all three values exactly and MUST reject a missing,
-unknown, superseded, or cross-family combination. Similar field names do not
-permit fallback to a Still Photo or Live Photo family.
-
-The top-level object contains exactly these contract fields:
+Producers write these top-level fields:
 
 | Field | Type | Presence | Meaning |
 | --- | --- | --- | --- |
 | `schema` | object | required | Exact family identity above. |
 | `payload` | object | required | Signed capture and finalized-container facts. |
-| `proofs` | array | required, empty | MUST be `[]`. The proof envelope belongs only in the fixed MP4 proof slot. |
+| `proofs` | array | required, empty | Producer writes `[]`. |
 
-The manifest and payload use
+Producers encode the manifest and payload using
 [TAP capture canonical JSON](../bindings/capture-binding-and-proof-v1.md#tap-capture-canonical-json).
-The metadata hash media type is
-`application/vnd.tapnap.video-manifest.payload+json;version=1`; its input is the
-exact raw canonical `payload` value embedded in this manifest. `proofs` is
-excluded from that metadata hash. The complete raw manifest box remains covered
-by the MP4 asset hash.
-
 In the tables below:
 
 - **required** means the key and a non-`null` value are required.
@@ -47,9 +37,6 @@ In the tables below:
 - **optional** means a v1 producer omits the key when its value is unavailable.
   A producer SHOULD use that omission form; a consumer MUST treat omission and
   explicit JSON `null` equivalently for these specifically marked fields.
-
-All counts are non-negative integers unless a stricter rule is stated. All
-JSON numbers that represent measured values MUST be finite.
 
 ## Payload groups
 
@@ -89,48 +76,27 @@ Every group named here is required in `payload`.
 | --- | --- | --- | --- |
 | `fileType` | string | required | `mp4` |
 | `mediaType` | string | required | `video/mp4` |
-| `durationSeconds` | number | required | seconds; `>= 0`; finalized presentation duration |
-| `timeScale` | integer | required | ticks per second; `> 0` |
-| `trackCount` | integer | required | actual total MP4 track count |
+| `durationSeconds` | number | required | seconds; finalized presentation duration, `>= 0` |
+| `timeScale` | integer | required | ticks per second, `> 0` |
+| `trackCount` | integer | required | observed total MP4 track count |
 
-The finalized file and these facts MUST agree. The v1 composition is one
-RGB video track, zero or one audio track, and zero or one TAP timed-metadata
-depth track.
+These facts come from the finalized MP4's postflight inspection.
 
 ### `rgbTrack`
 
 | Field | Type | Presence | Unit / meaning |
 | --- | --- | --- | --- |
-| `trackID` | integer | required | Actual non-conflicting MP4 track ID. |
-| `codec` | non-empty string | required | Actual video sample-entry FourCC, for example `avc1`; readers MUST use the recorded fact rather than assume H.264. |
-| `width` | integer | required | coded pixels; `> 0` |
-| `height` | integer | required | coded pixels; `> 0` |
-| `durationSeconds` | number | required | seconds; `>= 0` |
-| `timeScale` | integer | required | ticks per second; `> 0` |
+| `trackID` | integer | required | Observed MP4 track ID. |
+| `codec` | non-empty string | required | Observed video sample-entry FourCC, for example `avc1`. |
+| `width` | integer | required | coded pixels, `> 0` |
+| `height` | integer | required | coded pixels, `> 0` |
+| `durationSeconds` | number | required | seconds, `>= 0` |
+| `timeScale` | integer | required | ticks per second, `> 0` |
 | `nominalFrameRate` | number | optional | frames per second |
 | `frameCount` | integer | optional | captured RGB frame count |
 | `transform` | string | optional | Recorded RGB display transform. V1 forms are `rotation:N` and `rotation:N;mirrored`, where `N` is `0`, `90`, `180`, or `270` degrees clockwise. |
 
-`transform` applies to RGB presentation and the matching depth display grid.
-For a source grid with top-left-origin integer coordinates `(x, y)`, width `w`,
-and height `h`, the v1 mapping is:
-
-| Transform | Display orientation | Output size | Source to display coordinate |
-| --- | --- | --- | --- |
-| absent, `identity`, or `rotation:0` | up | `w × h` | `(x, y)` |
-| `rotation:0;mirrored` | up mirrored | `w × h` | `(w - 1 - x, y)` |
-| `rotation:90` | right | `h × w` | `(h - 1 - y, x)` |
-| `rotation:90;mirrored` | right mirrored | `h × w` | `(h - 1 - y, w - 1 - x)` |
-| `rotation:180` | down | `w × h` | `(w - 1 - x, h - 1 - y)` |
-| `rotation:180;mirrored` | down mirrored | `w × h` | `(x, h - 1 - y)` |
-| `rotation:270` | left | `h × w` | `(y, w - 1 - x)` |
-| `rotation:270;mirrored` | left mirrored | `h × w` | `(y, x)` |
-
-The literal `not-mirrored` belongs to the separate spatial-registration
-`recordedTransform` / `descriptor.connectionTransform` facts below; it is not
-a v1 `rgbTrack.transform` form. Readers MUST split transforms on `;` and
-compare complete components. Unknown or malformed components fail the semantic
-display check rather than silently changing the signed orientation.
+Display-coordinate mappings are defined in the [decoder section](../containers/tap-video-container-v1.md#display-coordinates).
 
 ### `audioTrack`
 
@@ -146,11 +112,11 @@ All seven keys are serialized. The six track-fact values are nullable.
 | `sampleRate` | number or `null` | nullable | samples per second (Hz) |
 | `channelCount` | integer or `null` | nullable | audio channels |
 
-For `captured`, `trackID`, `codec`, `durationSeconds`, and `timeScale` MUST be
-non-`null`, the duration MUST be `>= 0`, and the timescale MUST be `> 0`.
+For `captured`, the producer records `trackID`, `codec`, `durationSeconds`, and
+`timeScale` from its audio track.
 `sampleRate` and `channelCount` may remain `null` if the finalized file does not
-expose them. For `notCaptured` or `unavailable`, no audio track may exist and
-all six fact values MUST be `null`; a producer MUST NOT invent a silent track.
+expose them. For `notCaptured` or `unavailable`, the producer records null track
+facts.
 
 ### `depthCoverage`
 
@@ -164,17 +130,14 @@ nullable so the same family represents a canonical zero-depth capture.
 | `trackDurationSeconds` | number or `null` | nullable | seconds |
 | `trackTimeScale` | integer or `null` | nullable | ticks per second |
 | `sampleCount` | integer | required | Successfully stored KLV depth samples. |
-| `deliveredSampleCount` | integer | required | Depth samples delivered to the recorder; MUST be `>= sampleCount`. |
+| `deliveredSampleCount` | integer | required | Depth samples delivered to the recorder. |
 | `outputDropCount` | integer | required | Capture-output drops. |
 | `encodingDropCount` | integer | required | Depth packing or compression failures. |
 | `metadataDropCount` | integer | required | Timed-metadata append/backpressure drops. |
-| `gapCount` | integer | required | MUST equal `gaps.length`. |
+| `gapCount` | integer | required | Producer's recorded gap count. |
 | `gaps` | array of `DepthGap` | required | Truthful missing-depth intervals; at most 1,024 entries. |
 | `format` | object or `null` | nullable | Invariant packed-frame layout. |
 
-If `sampleCount > 0`, `trackID`, `trackCodec`, `trackDurationSeconds`,
-`trackTimeScale`, and `format` MUST be non-`null`; duration MUST be `>= 0`; and
-timescale MUST be `> 0`. The metadata track and manifest facts MUST match.
 
 If `sampleCount == 0`, the canonical values are `trackID: null`,
 `trackCodec: null`, `trackDurationSeconds: null`, `trackTimeScale: null`, and
@@ -197,10 +160,7 @@ Video. `gaps` may truthfully describe the affected interval, usually as
 | `uncompressedFrameByteCount` | integer | required | bytes; MUST equal `packedRowStride * height` and MUST be at most 32 MiB |
 | `compressionPolicy` | string | required | `per-frame:zstd1|raw`, `per-frame:lzfse|raw`, or `per-frame:raw`. Every KLV `COMP` value MUST be allowed by this policy. |
 
-The valid `(kind, pixelFormat, bytesPerSample)` combinations are exactly
-`(depth,hdep,2)`, `(depth,fdep,4)`, `(disparity,hdis,2)`, and
-`(disparity,fdis,4)`. Rows contain only logical samples; source-buffer padding
-is not copied into `DPTH`.
+Packed frame layout is defined with the [codec rules](../containers/tap-video-container-v1.md#packed-frame-and-codec-rules).
 
 #### `DepthGap`
 
@@ -208,23 +168,19 @@ is not copied into `DPTH`.
 | --- | --- | --- | --- |
 | `reason` | string | required | `outputDrop`, `encodingFailure`, `metadataBackpressure`, `silentCadence`, or `boundedAggregation` |
 | `startPTS` | `MediaTime` | required | inclusive capture-relative start |
-| `endPTS` | `MediaTime` | required | capture-relative end; MUST be at or after start |
+| `endPTS` | `MediaTime` | required | Recorded capture-relative end |
 | `nearestStartRGBFrame` | integer | optional | nearest RGB frame index at the start |
 | `nearestEndRGBFrame` | integer | optional | nearest RGB frame index at the end |
 
-`boundedAggregation` is the conservative range used after the 1,024-entry gap
-table reaches its limit; a consumer treats depth as unavailable for the whole
-range. A visual playback consumer may retain a previously displayed valid
-frame, but that display is not a new sample or evidence that current depth is
-available. A
-`MediaTime` object has required integer `value` (ticks) and integer `timescale`
+`boundedAggregation` records a conservative missing-depth interval after the
+1,024-entry table reaches its limit. A `MediaTime` object has required integer `value` (ticks) and integer `timescale`
 (ticks per second, `> 0`); seconds are `value / timescale`.
 
 ### `spatialRegistration`
 
 | Field | Type | Presence | Unit / meaning |
 | --- | --- | --- | --- |
-| `status` | string | required | Valid v1 artifact states are `registered` or `unavailable`. `approximate` is not valid v1 input and MUST NOT enable an overlay. |
+| `status` | string | required | `registered` or `unavailable`. |
 | `mapping` | string | required | Registration family identifier when registered, otherwise `unavailable` or a producer reason prefixed by `avdepthdata-registration-prerequisites-unavailable:`. |
 | `rgbReferenceDimensions` | `Dimensions` | optional | aligned RGB coded pixels |
 | `depthReferenceDimensions` | `Dimensions` | optional | depth pixels |
@@ -234,10 +190,7 @@ available. A
 | `calibrationCoverage` | object | required | How stored depth samples reference the table. |
 | `descriptor` | object | optional | Complete reproducible mapping; required only for `registered`. |
 
-For `registered`, `mapping` MUST equal
-`urn:tapnap:tapcam:video-depth-registration:avdepthdata-yuv-warp:v1` and
-`descriptor` MUST be present and valid. For `unavailable`, `descriptor` MUST be
-absent or `null`. `approximate` is not a valid substitute for `registered`.
+The producer omits the registration descriptor when unavailable.
 
 `Dimensions` has required numeric `width` and `height`, in pixels. `Rect` has
 required numeric `x`, `y`, `width`, and `height`, in top-left-origin pixels.
@@ -252,11 +205,6 @@ image.
 | `missingCalibrationSampleCount` | integer | required | Samples without calibration because none was supplied. |
 | `overflowUnindexedSampleCount` | integer | required | Samples left unindexed after the 16-entry table filled. |
 | `tableOverflowed` | boolean | required | Whether additional distinct calibration could not be indexed. |
-
-The three counts MUST sum to `depthCoverage.sampleCount`. A positive indexed
-count requires a non-empty table. A positive overflow count requires
-`tableOverflowed: true`; when `tableOverflowed` is true, the table has 16
-entries.
 
 The optional [inline-calibration `CALD` record](../containers/tap-video-container-v1.md#inline-calibration-extension-cald)
 preserves a frame's calibration when the table is full. Such a frame still
@@ -296,11 +244,7 @@ All descriptor fields are required:
 | `rgbCleanAperture` | `Rect` | presented RGB aperture in encoded, top-left-origin pixels |
 | `videoStabilizationMode` | string | `off` |
 
-The model means `AVDepthData` has already been lens-warped into the synchronized
-pre-connection RGB coordinate system. Apply the affine to depth pixel centres,
-then the connection rotation and optional horizontal mirror in encoded space,
-then the clean aperture. Only a fully validated `registered` descriptor enables
-registered 2D playback.
+See [display coordinates](../containers/tap-video-container-v1.md#display-coordinates) for the transform order.
 
 ### `synchronization`
 
@@ -311,11 +255,6 @@ registered 2D playback.
 | `maxObservedDeltaSeconds` | number | optional | seconds; maximum observed synchronized RGB/depth delivery delta |
 | `maxObservedDepthIntervalSeconds` | number | optional | seconds; maximum interval between stored depth samples |
 | `nominalDepthIntervalSeconds` | number | optional | seconds; expected source depth cadence |
-
-The descriptive strings do not replace sample timestamps. Stored KLV PTS values
-MUST be strictly increasing, agree with their timed-metadata group timestamps,
-and remain within the signed track duration. Discontinuities must be covered by
-the signed gap table.
 
 ### `stop`
 
@@ -334,11 +273,3 @@ This contract sets no capture-duration limit.
 | `appVersion` | string | required | Producer short version. |
 | `buildNumber` | string | required | Producer build number. |
 | `schemaWriter` | non-empty string | required | Opaque producer-defined schema-writer identifier. |
-
-## Consumer obligations
-
-A consumer MUST first route the exact family and require `proofs: []`. It then
-authenticates the MP4 and canonical payload through the TAP Video content
-binding before treating any payload claim as authenticated. A valid manifest
-does not by itself prove the physical scene, event, person, time, non-AI origin,
-or depth correctness.

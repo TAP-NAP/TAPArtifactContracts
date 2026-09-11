@@ -32,8 +32,8 @@ The manifest is the UTF-8 JSON string value of the XMP property identified by:
 | Preferred prefix | `tapdepth` |
 | Property/path | `tapdepth:Manifest` |
 
-The JSON string is the complete top-level manifest object, including `schema`,
-`payload`, and `proofs: []`. A verifier MUST resolve the XMP property, undo XML
+Producers write the complete manifest object with `schema`, `payload`, and empty
+`proofs`. A verifier uses only the fixed slot for proof. It MUST resolve the XMP property, undo XML
 entity encoding, parse the resulting JSON, and require exactly one manifest
 property. XML attribute-style and element-style representations of the same
 namespace/property are container serializations, not different manifest
@@ -116,26 +116,3 @@ A verifier MUST find exactly one match and use the full marker-through-payload
 range for `assetHash.excludedRanges` and `proofSlot`. It MUST reject a malformed
 segment, zero matches, or multiple matches rather than treating an arbitrary
 APP11 segment as TAP evidence.
-
-## Binding relationship
-
-The complete hash and proof relationship is defined in
-[Capture Binding and Proof v1](../bindings/capture-binding-and-proof-v1.md).
-For these wrappers, XMP remains inside the format-native `assetHash` while its
-payload is additionally named by `metadataHash`; only the complete slot wrapper
-is excluded.
-
-## Container validation
-
-A conforming verifier MUST:
-
-- accept only the reviewed HEIC/HEIF image type as `heic` or JPEG as `jpeg` for
-  these families, and match `capture.requestedCodec` (`hvc1` or `jpeg`);
-- locate exactly one XMP manifest and exactly one proof slot;
-- validate slot payload size, magic, version, positive signed-envelope length,
-  capacity, and zero trailing padding;
-- preserve exact file bytes and offsets when hashing;
-- check auxiliary depth/disparity presence against both manifest availability
-  fields and the binding's `depthResource`; and
-- for Live Photo, treat `paired-video.mov` as a separate full-file signed
-  resource rather than a nested photo-container region.

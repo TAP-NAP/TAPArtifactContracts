@@ -19,72 +19,40 @@ All three use the distinct signing-binding family
 `TAPCam.AppAttestCaptureSignature.v1`. A shared signing-binding family does not
 make the manifest or content-binding families interchangeable.
 
-## End-to-end byte chain
-
-```text
-embedded manifest.payload
-  -> TAP capture canonical JSON UTF-8 bytes
-  -> SHA-256 -> metadataHash.value
-
-primary HEIC/JPEG or TAP Video MP4 bytes minus the entire proof-slot container range
-  -> SHA-256 -> assetHash.value
-
-Live Photo only: complete paired-video.mov bytes
-  -> SHA-256 -> signedResources.pairedLivePhotoVideo.value
-
-assetHash + metadataHash + proofSlot + depthResource [+ signedResources]
-  -> contentDigest object
-  -> canonical JSON -> SHA-256 -> signingBinding.bodySHA256
-
-signingBinding object
-  -> canonical JSON -> SHA-256 raw 32-byte clientDataHash
-  -> App Attest generateAssertion
-  -> assertionObject
-
-contentDigest + keyId + assertionObject + signingBinding
-  -> canonical proof-value JSON -> base64url -> proof.value
-  -> canonical proof JSON -> fixed proof-slot envelope bytes
-```
-
-Changing proof-slot contents does not change `assetHash`, because the entire
-slot container range—not only the envelope bytes—is excluded.
+Select the algorithm by the exact manifest `schema.id` and its matching binding
+family. The manifest's descriptive `schema.version` and `schema.mediaType` do
+not select it; the payload hash media type is the fixed value in this matrix.
 
 ## Hash participation by artifact family
 
-This table is the normative answer to which bytes and manifest values are
-combined at each layer. A check mark means the named input participates in that
-layer, directly or through the object named in the row.
+This table names the existing inputs at each hash stage. Embedded payload bytes
+are preserved; only the digest and signing message are canonicalized for hashing.
 
 | Hash or signed input | Still Photo | Live Photo | TAP Video |
 | --- | --- | --- | --- |
-| `metadataHash` | Canonical `manifest.payload` only | Canonical `manifest.payload` only | Canonical `manifest.payload` only |
+| `metadataHash` | Exact embedded `manifest.payload` bytes | Same | Same |
 | Primary `assetHash` | Complete HEIC/JPEG except the complete proof-slot container; this includes XMP and any auxiliary depth item | Same primary-photo rule; the paired MOV is not part of this hash | Complete MP4 except the complete proof-slot UUID box; this includes the manifest UUID box, RGB/audio media, KLV depth samples, sample tables, and other MP4 bytes |
 | `signedResources.primaryPhoto` | Omitted | Same value and excluded range as `assetHash` | Omitted |
-| `signedResources.tapDepthManifestPayload` | Omitted | Same hash value as `metadataHash`; also binds canonical payload byte count | Omitted |
+| `signedResources.tapDepthManifestPayload` | Omitted | Same hash value as `metadataHash`; also binds exact payload byte count | Omitted |
 | `signedResources.pairedLivePhotoVideo` | Omitted | SHA-256 of every byte of the paired MOV | Omitted |
-| `contentDigest` canonical JSON | `assetHash`, `metadataHash`, located `proofSlot`, actual `depthResource`, family/manifest IDs, capture ID, and capture time | All Still fields plus the ordered three-entry `signedResources` array | `assetHash`, `metadataHash`, located `proofSlot`, manifest-derived `depthResource`, family/manifest IDs, capture ID, and capture time |
+| `contentDigest` canonical JSON | `assetHash`, `metadataHash`, located `proofSlot`, recorded `depthResource`, family/manifest IDs, capture ID, and capture time | All Still fields plus the ordered three-entry `signedResources` array | Same fields as Still, with the recorded video `depthResource` |
 | `signingBinding.bodySHA256` | SHA-256 of the complete canonical `contentDigest` above | Same | Same |
 | App Attest `clientDataHash` | SHA-256 of the complete canonical `signingBinding` | Same | Same |
 
 `manifest.schema` and `manifest.proofs` are not hashed inside `metadataHash`.
 The exact manifest family is still authenticated because
 `contentDigest.manifestSchemaID` participates in `bodySHA256`.
-`manifest.proofs` MUST be an empty array. The fixed proof-slot bytes are
+Producers write `manifest.proofs` as an empty array. Verification ignores that
+member as a proof source; its bytes remain covered by `assetHash`. The fixed proof-slot bytes are
 excluded from the primary `assetHash` because they contain the assertion that
 is produced from that hash chain; the slot location and length are still bound
 through `contentDigest.proofSlot`.
 
-Photo auxiliary depth participates as bytes already inside the HEIC/JPEG
-`assetHash`, not as a separately converted pixel plane. TAP Video KLV depth
-samples likewise participate as MP4 bytes inside `assetHash`; their declared
-coverage also participates through the manifest payload and `depthResource`.
-Only Live Photo has a second file, so only Live Photo needs the full-file MOV
-hash in `signedResources`.
-
 ## TAP capture canonical JSON
 
-**TAP capture canonical JSON** is compact UTF-8 JSON with these v1 lexical
-rules:
+**TAP capture canonical JSON** is the unchanged encoding for `contentDigest`
+and `signingBinding`. Producers also use this style for content JSON. Content
+style is not a signature-acceptance condition. The encoding rules are:
 
 - there is no byte-order mark, insignificant whitespace, or trailing data;
 - object member names are unique and sorted recursively in ascending unsigned
@@ -104,29 +72,15 @@ rules:
   floating-point negative zero may therefore appear as `-0`. NaN and infinities
   are forbidden, and no consumer may rewrite a number token before hashing.
 
-For `manifest.payload`, byte preservation is part of the contract. The exact
-payload-value byte sequence embedded in the top-level manifest MUST be
-byte-for-byte identical to the sequence used for `metadataHash` (and the Live
-Photo `tapDepthManifestPayload` byte count). A consumer MUST locate that raw JSON
-value after decoding its container wrapper, validate the manifest and the
-lexical rules above, and hash the exact raw payload bytes. It MUST NOT use a
-parse-then-reserialize result as the hash input.
+For `metadataHash` and the Live payload byte count, locate the exact raw
+`manifest.payload` value after decoding its container wrapper. Never reserialize
+it: whitespace, member order and number spelling remain part of those bytes.
+The historical `canonical-json` kind and media-type identifiers stay unchanged.
 
-V1 did not separately version an exhaustive binary32/binary64-to-decimal
-algorithm for every possible non-integer value. The producer-emitted number
-token is therefore part of the signed capture bytes, not permission for a
-consumer to choose an equivalent spelling. The
-[exact canonical-byte vector](../examples/vectors/tap-capture-canonical-json-v1.json)
-is an immutable oracle for its representative values, not a general number
-formatter. A producer claiming v1 must retain byte-compatible numeric emission
-for every value it writes; changing that emission requires contract review and
-cannot be treated as an editorial clarification. This profile is not RFC
-8785/JCS.
-
-The v1 `contentDigest`, signing binding, proof value, and proof envelope contain
-no floating-point fields, so their canonical bytes are fully determined by the
-other rules above. The floating-point limitation applies to manifest payload
-number tokens, whose exact embedded bytes remain the hash input.
+This profile is not RFC 8785/JCS. V1 has no general binary32/binary64 decimal
+formatter beyond the [exact vector](../examples/vectors/tap-capture-canonical-json-v1.json).
+The digest, signing binding and proof contain no floating-point fields; their
+canonical encoding is fully specified above.
 
 ## Hash and encoding primitives
 
@@ -149,10 +103,10 @@ The serialized proof-value member is named `contentDigest`.
 | `manifestSchemaID` | string | Required | Exact paired manifest family. |
 | `captureID` | string | Required | Exact `manifest.payload.id`. |
 | `capturedAt` | string | Required | Exact `manifest.payload.capturedAt`. |
-| `assetHash` | object | Required | Primary photo format-native byte-range hash. |
-| `metadataHash` | object | Required | Canonical manifest payload hash. |
+| `assetHash` | object | Required | Primary artifact format-native byte-range hash. |
+| `metadataHash` | object | Required | Exact embedded manifest payload hash. |
 | `proofSlot` | object | Required | Located fixed-slot descriptor. |
-| `depthResource` | object | Required | Actual auxiliary-depth presence/binding declaration. |
+| `depthResource` | object | Required | Recorded depth declaration, authenticated as written. |
 | `signedResources` | array | Still/Video: omitted; Live: required | Exactly three Live Photo resource descriptors in producer order. |
 
 ### `assetHash`
@@ -179,11 +133,7 @@ marker and length.
 | `kind` | string | `canonical-json` |
 | `mediaType` | string | Family-specific payload media type from the matrix |
 | `algorithm` | string | `SHA-256` |
-| `value` | string | Base64url SHA-256 of canonical `manifest.payload` JSON bytes |
-
-`manifest.schema` and `manifest.proofs` are not part of `metadataHash`; family
-identity is separately bound through `manifestSchemaID`, and `manifest.proofs`
-MUST remain empty.
+| `value` | string | Base64url SHA-256 of exact embedded `manifest.payload` JSON bytes |
 
 ### `proofSlot`
 
@@ -223,8 +173,7 @@ complete enclosing UUID box or JPEG APP11 segment defined by
 
 ### `depthResource`
 
-The descriptor is selected from actual auxiliary-depth readback and must agree
-with both manifest availability fields.
+The producer records its auxiliary-depth observation using these descriptors:
 
 | Depth availability | `presence` | `binding` | `interpretation` | `platformPresenceCheck` |
 | --- | --- | --- | --- | --- |
@@ -245,9 +194,8 @@ For TAP Video, `depthResource` is derived from the signed manifest's
 | `sampleCount > 0` | `captured` | `covered-by-assetHash` | `not-part-of-base-signature` | `TAPVideoManifest.depthCoverage` |
 | `sampleCount == 0` | `no-samples` | `coverage-recorded-in-manifest` | `not-part-of-base-signature` | `TAPVideoManifest.depthCoverage` |
 
-Stored KLV samples are already bytes inside the MP4 `assetHash`. A zero-depth
-TAP Video remains a valid family member and binds the signed no-samples fact in
-its manifest payload.
+Verification preserves this declaration in `contentDigest`; the complete digest
+hash authenticates it. Auxiliary-depth detection is not repeated.
 
 ### Live Photo `signedResources`
 
@@ -259,7 +207,7 @@ present only where shown and is omitted—not `null`—otherwise.
 | Role | Required descriptor |
 | --- | --- |
 | `primaryPhoto` | `kind`, `algorithm`, `byteCount`, `value`, and `excludedRanges` equal `assetHash`; `mediaType` is `public.heic` or `public.jpeg`; `binding` is `format-native-byte-ranges`. |
-| `tapDepthManifestPayload` | `kind: canonical-json`; Live payload media type; `algorithm: SHA-256`; `byteCount` is canonical payload byte length; `value` equals `metadataHash.value`; `binding: canonical-json`; `excludedRanges` omitted. |
+| `tapDepthManifestPayload` | `kind: canonical-json`; Live payload media type; `algorithm: SHA-256`; `byteCount` is exact embedded payload byte length; `value` equals `metadataHash.value`; `binding: canonical-json`; `excludedRanges` omitted. |
 | `pairedLivePhotoVideo` | `kind: format-native-full-file`; `mediaType: com.apple.quicktime-movie`; `algorithm: SHA-256`; full MOV byte count; base64url hash of the complete MOV; `binding: full-file`; `excludedRanges` omitted. |
 
 The MOV digest MUST NOT appear in `manifest.payload.livePhoto`.
@@ -273,13 +221,8 @@ The fixed slot's envelope bytes are canonical JSON for this object:
 | `type` | string | Required | `appAttestAssertion` |
 | `algorithm` | string | Required | `TAPCam.AppAttestCaptureSignature.v1` |
 | `keyID` | string | Required | Non-empty App Attest key handle |
-| `createdAt` | string | Required | Exact `contentDigest.capturedAt` |
+| `createdAt` | string | Producer-required | Producer writes `contentDigest.capturedAt`; verification ignores this excluded-envelope copy. |
 | `value` | string | Required | Unpadded base64url of canonical `CaptureAssertionProofValue` JSON bytes |
-
-A valid signed artifact requires `keyID`, `createdAt`, and `value`; omission or
-`null` is rejected.
-`manifest.proofs` remains empty before and after this object is written into the
-slot.
 
 After base64url decoding, `proof.value` is this required object:
 
@@ -299,116 +242,51 @@ After base64url decoding, `proof.value` is this required object:
 | `operation` | string | `tapcam.capture.sign` |
 | `schemaID` | string | `urn:tapnap:tapcam:app-attest-capture-signing:v1` |
 
-The producer canonicalizes this four-member object, SHA-256 hashes those bytes,
-and passes the resulting raw 32 bytes as App Attest `clientDataHash`. The
-returned assertion bytes become `proof.value.assertionObject`.
-
 ## Producer signing procedure
 
-The producer MUST perform these operations in order for each artifact. The
-procedure is the same for all three families except where a row in the hash
-participation table differs.
+1. Finish the primary file, embedded manifest and one empty fixed proof slot;
+   finish the MOV too for Live Photo. Locate the slot and manifest using the
+   container contract and require the matching manifest/binding family.
+2. Build the fields below the hash table from those exact bytes and recorded
+   declarations; calculate its stages through the raw 32-byte `clientDataHash`.
+3. Call App Attest with that hash and the registered capture key. Encode the
+   returned assertion, digest and signing binding in the proof objects above.
+4. Fill only the located slot, with the specified envelope and zero padding.
+   Do not resize the file, move the slot or rewrite the manifest.
+5. Reopen the final bytes and run the local reconstruction below before export.
 
-1. Finish the primary HEIC/JPEG/MP4 container with exactly one empty fixed proof
-   slot. Finish the paired MOV first for Live Photo.
-2. Locate and validate the actual slot, parse the embedded manifest, require
-   `manifest.proofs: []`, and require the exact manifest family for the selected
-   artifact route.
-3. Carry the exact manifest capture time into the digest. Validate the manifest
-   capture ID, output/container facts, depth availability, and—when
-   applicable—the Live Photo pairing declaration against the resources being
-   signed.
-4. Compute `assetHash` and `metadataHash` from the exact inputs in the family
-   table. For Live Photo, also compute the ordered three-entry
-   `signedResources` array, including the full paired-MOV hash.
-5. Assemble the complete family-specific `contentDigest`, including the
-   located slot descriptor and actual depth descriptor.
-6. Canonicalize `contentDigest`, hash those bytes with SHA-256, and place the
-   unpadded base64url digest in `signingBinding.bodySHA256`.
-7. Assemble the four-field `signingBinding`, canonicalize it, and SHA-256 hash
-   those bytes. Pass the raw 32-byte digest—not its base64url text—to App Attest
-   as `clientDataHash` for the already registered capture key.
-8. Receive the App Attest assertion bytes. Store their unpadded base64url form
-   as `proof.value.assertionObject`, alongside the complete `contentDigest`,
-   key handle, and complete `signingBinding`.
-9. Canonicalize that proof-value object, encode those bytes as unpadded
-   base64url in the outer proof envelope, then canonicalize the envelope.
-10. Write only that envelope into the already located fixed slot and leave the
-    remaining slot payload zero-filled. The producer MUST NOT resize the file,
-    move the slot, or rewrite the manifest while filling the proof.
-11. Reopen the final artifact, repeat the applicable local reconstruction and
-    relationship checks below, and reject it before export if any byte,
-    descriptor, family, ID, or timestamp no longer matches.
-
-App Attest key creation, attestation registration, credential recovery, and
-retry policy follow [ProductContract.md](../ProductContract.md#6-credential-and-verification-ux)
-and [BackendContract.md](../BackendContract.md). Their prerequisite in this byte contract
-is only that `keyId` identifies a backend-registered App Attest public key and
-the producer can ask the corresponding system-protected private key to generate
-the assertion. The private key and raw media bytes never enter this repository.
-
-The backend request contains only `keyId`, `assertionObject`, and the complete
-`signingBinding`. The backend verifies registered-key/App Attest semantics; it
-does not receive or hash the photo, manifest payload, or MOV. Therefore a local
-verifier MUST first recompute and compare the artifact byte binding and MUST NOT
-treat a backend-valid response alone as proof about the received media.
+Key registration and retry follow [BackendContract.md](../BackendContract.md)
+and [ProductContract.md](../ProductContract.md#6-credential-and-verification-ux).
 
 ## Local reconstruction and cryptographic verification
 
-Verification has two different gates. The local verifier proves that the
-received artifact reconstructs the binding carried in the proof. The backend
-then performs the cryptographic App Attest assertion verification. Neither gate
-substitutes for the other.
+Verification recomputes the same hash stages, then authenticates the assertion.
+It does not decode media or assess sample values, ordering, counts, alignment,
+capture settings, calibration, quality or content writing style.
 
 ### Local artifact-binding gate
 
-The local verifier MUST, in order:
+1. Resolve the primary and optional MOV. Bound reads, locate exactly one
+   manifest and proof slot, and check their container and slot framing.
+2. Parse the proof objects against the field tables above, including the exact
+   proof type/algorithm, non-empty key/assertion, and matching signing families.
+3. Recompute the available blob hashes, byte counts, slot/range and manifest
+   identity fields. Preserve the embedded `depthResource`; compare the rebuilt
+   fields with `contentDigest`, including Live resource descriptors.
+4. Recompute `bodySHA256` and `signingBinding` and compare both. Require matching
+   outer/inner key IDs and capture IDs. Display only the bound capture time.
 
-1. Resolve the received primary artifact and optional paired MOV, and name the
-   verification scope. Still Photo and TAP Video have one full-artifact scope.
-   Live Photo has either a full scope with matching MOV bytes or an explicitly
-   limited primary-photo scope. A `.tapnap` sidecar may locate resources but
-   MUST NOT supply trusted family, hash, or verdict facts.
-2. Bound the input, identify HEIC/JPEG/MP4, locate exactly one supported proof
-   slot and manifest, and validate their binary framing before allocating or
-   hashing attacker-declared lengths.
-3. Parse the envelope and decoded proof value; require the exact proof type,
-   algorithm, non-empty `keyID`, non-empty assertion, zero slot padding, empty
-   manifest `proofs`, and an allowed manifest/content-binding family pair.
-4. Recompute every family-specific input available to the named scope from the
-   received bytes and the exact raw embedded payload value; do not reserialize
-   that value or copy an available byte-derived value from the proof.
-5. For Still Photo, TAP Video, and full Live Photo, rebuild the complete
-   `contentDigest` and compare it structurally and completely with
-   `proof.value.contentDigest`, including byte counts, excluded range, slot
-   offsets, depth declaration, ordered Live resources, IDs, and timestamps.
-6. For a Live Photo primary-only scope, recompute and compare the primary
-   `assetHash`, `metadataHash`, slot, depth, primary resource, and manifest
-   resource. Require a complete, structurally valid signed paired-MOV
-   descriptor, but do not claim its hash or the complete Live `contentDigest`
-   was independently reconstructed without matching MOV bytes.
-7. For a full-artifact scope, canonicalize the rebuilt `contentDigest`; for a
-   Live Photo primary-only scope, canonicalize the structurally validated
-   embedded `contentDigest`. Recompute `bodySHA256`, rebuild the complete
-   `signingBinding`, and compare it with `proof.value.signingBinding`.
-8. Require the outer `keyID` to equal `proof.value.keyId`, the outer
-   `createdAt` to equal `contentDigest.capturedAt`, and every capture ID and
-   family relationship to agree.
+Still and Video require complete reconstruction. Live Photo uses these scopes:
 
-A full Live Photo result additionally requires the supplied MOV's complete
-bytes to match the signed `pairedLivePhotoVideo` descriptor. With absent or
-mismatching MOV bytes, a verifier may report only the clearly labelled
-primary-photo scope after the limited checks above; it MUST warn about the MOV
-state and MUST NOT claim the MOV bytes or full Live Photo were verified. The
-backend gate authenticates that the registered key signed the embedded digest,
-including its paired-MOV descriptor; it does not turn an unreceived or
-mismatching MOV into locally verified bytes.
+| Received MOV | Reconstructed fields | Result after backend verification |
+| --- | --- | --- |
+| Exact signed bytes, including an empty file if its hash matches | Complete `contentDigest` | Full Live Photo |
+| Missing or mismatching | Primary asset, payload, slot and their two signed resources; validate the full signed MOV descriptor without claiming its bytes match | Primary photo only, with an explicit missing/mismatch warning |
 
-Passing this local gate authenticates internal byte-binding relationships; it
-does not cryptographically verify the App Attest assertion. A consumer may run
-separately bounded preview or TAP Video semantic inspection while the backend
-gate is pending, but those results remain untrusted and cannot produce a final
-authenticated verdict.
+For primary-only Live verification, use the complete embedded digest to
+recompute `bodySHA256`. Its signature authenticates the MOV declaration, not
+unreceived or mismatching MOV bytes. A malformed signed resource descriptor
+fails verification. Local success alone is not App Attest verification.
 
 ### Backend App Attest gate
 
@@ -437,8 +315,6 @@ Steps 3 through 5 follow Apple's
 relationship. This artifact contract fixes the capture-specific client data
 and byte relationship; [BackendContract.md](../BackendContract.md) owns counter persistence,
 out-of-order submission policy, replay handling, endpoint responses, and audit.
-It therefore does not invent a stricter counter rule here.
-
 The backend does not receive `contentDigest`, the manifest, the primary media,
 depth bytes, or the paired MOV. Its valid result means the registered App
 Attest key signed the submitted `signingBinding`. A final artifact verdict is
@@ -446,14 +322,3 @@ valid only when that server result is joined with the already-passing local
 artifact-binding scope. Capture signing has no server freshness challenge, so
 this proves the signed binding, not scene truth or non-replay of an otherwise
 valid artifact.
-
-## Fail-closed rejection summary
-
-Missing slots, duplicate slots, malformed lengths, invalid magic/version,
-non-zero trailing padding, non-empty manifest proofs, mismatched family pairs,
-missing Live Photo resources, hash mismatches, or relationship mismatches MUST
-fail the affected verification scope before the backend request. An unknown or
-inactive key, malformed assertion, signature failure, app/environment mismatch,
-or backend counter/replay-policy failure MUST fail at the backend gate. A
-transport label, decoded-pixel match, or backend-valid result alone MUST NOT
-upgrade either failure to valid.

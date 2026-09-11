@@ -3,24 +3,19 @@
 Status: v1 container contract
 Manifest: [`../manifests/tap-video-v1.md`](../manifests/tap-video-v1.md)
 
-One TAP Video capture is one `video/mp4` file. It is not a ZIP archive, a
-`.tapnap` package, a JSON sidecar, or a set of synchronized files. The MP4 owns
-the standard playable tracks, the embedded TAP Video manifest, the fixed proof
-slot, and—when samples were stored—the TAP-private timed-depth track.
+This document defines one shared layout for TAP Video encoding and decoding:
+standard MP4 tracks, embedded manifest, fixed proof slot and optional timed depth.
+Hash coverage and verification follow [Capture Binding and Proof](../bindings/capture-binding-and-proof-v1.md).
 
 ## Track composition
 
 | Part | Cardinality | V1 contract |
 | --- | --- | --- |
-| RGB video | exactly one | Standard MP4 video track. The manifest binds the actual codec and track facts. |
-| Audio | zero or one | Standard audio track. The manifest binds the actual codec and distinguishes `captured`, `notCaptured`, and `unavailable`. |
+| RGB video | exactly one | Standard MP4 video track. The manifest records codec and track facts. |
+| Audio | zero or one | Standard audio track. The manifest records codec and distinguishes `captured`, `notCaptured`, and `unavailable`. |
 | TAP timed depth | zero or one | Private timed-metadata track, present only when at least one real depth sample was stored. |
 
-With stored depth, the file therefore has one RGB track, one metadata track,
-and optionally one audio track. With zero stored depth, it has one RGB track,
-optionally one audio track, and no TAP metadata track. `container.trackCount`
-and every manifest track fact MUST agree with the finalized MP4. Track IDs MUST
-be distinct.
+Players resolve tracks from the actual MP4 sample tables.
 
 Ordinary MP4 players may ignore the private metadata and top-level `uuid`
 boxes and play RGB/audio normally.
@@ -49,7 +44,7 @@ The optional independently versioned
 UUID box covered by that same asset-byte view. It changes no v1 track or KLV
 record and grants no additional proof-slot exclusion.
 
-The `TAPCAMVIDEOMANF1` box contains no proof body and manifest `proofs` MUST be
+The producer writes no proof body in `TAPCAMVIDEOMANF1`; manifest `proofs` is
 empty. Its proof envelope is stored only in the proof-slot box. The exact TAP
 Video family, excluded range, hash participation, and signing fields are defined
 in [Capture Binding and Proof v1](../bindings/capture-binding-and-proof-v1.md).
@@ -65,8 +60,8 @@ mdta/com.tapnap.depth.klv
 The item data type is raw data. The finalized MP4 metadata sample-entry codec
 recorded in `depthCoverage.trackCodec` is `mebx`. Each timed item carries one
 independently decodable TAP KLV frame. The MP4 timed-metadata sample timestamp
-and the KLV `PTS ` timestamp describe the same capture-relative instant within
-one tick of the finer relevant timescale.
+and the KLV `PTS ` timestamp record timing observations. A player resolves
+these timestamps through the MP4 edit list when selecting frames.
 
 This is a TAP-private schema that borrows a compact KLV pattern. It does not
 adopt GoPro/GPMF field meanings and is not a standard depth-video track.
@@ -116,7 +111,7 @@ by key, not by position; record order is not significant.
 | Key | Presence | Payload | Meaning |
 | --- | --- | --- | --- |
 | `TVER` | required, once | 4-byte UInt32BE | KLV frame schema version; MUST equal `1`. |
-| `FRAM` | required, once | 4-byte UInt32BE | Zero-based timed-depth MP4 sample ordinal. Values MUST be contiguous in sample order from `0` through `depthCoverage.sampleCount - 1`. |
+| `FRAM` | required, once | 4-byte UInt32BE | Producer's recorded frame ordinal; a consumer must not assume it is a unique array index. |
 | `PTS ` | required, once | 8-byte Int64BE value followed by 4-byte Int32BE timescale | Capture-relative presentation time in ticks; timescale MUST be `> 0`; seconds are `value / timescale`. |
 | `COMP` | required, once | ASCII bytes | `raw`, `lzfse`, or `zstd1`. The value MUST also be permitted by the manifest `compressionPolicy`. |
 | `ULEN` | required, once | 4-byte UInt32BE | Uncompressed packed-frame byte count. It MUST equal `depthCoverage.format.uncompressedFrameByteCount`. |
@@ -165,10 +160,10 @@ decodes to the same lookup-table bytes is not canonical. The
 [shared extension vectors](../examples/vectors/tap-video-extensions-v1.json)
 include exact accepted bytes and rejected unknown-member, BOM, and pad-bit cases.
 
-A reader recognizing this extension validates `CALD` even when it does not
-render 3D. It rejects simultaneous `CALI`/`CALD`, invalid calibration, and an
-oversized payload. Existing readers may skip `CALD` as an unknown key and
-continue their v1 checks. Other unknown keys retain the same skippable behavior.
+A calibration consumer validates `CALD` when it uses it. Ambiguous `CALI`/`CALD`,
+unusable calibration, or oversized data prevents that calibration operation.
+Other consumers may leave the bytes uninterpreted. Unknown keys retain the
+skippable behavior above; all bytes remain covered by the same asset hash.
 
 The 16-entry table and all `calibrationCoverage` counters remain unchanged:
 `indexedSampleCount` counts only `CALI`; a frame with calibration that could not
@@ -183,19 +178,51 @@ transport family is added.
 
 ## Packed frame and codec rules
 
-- Accepted stored formats are Float16 or Float32 depth/disparity:
-  `hdep`, `fdep`, `hdis`, and `fdis`.
+- Valid `(kind, pixelFormat, bytesPerSample)` combinations are
+  `(depth,hdep,2)`, `(depth,fdep,4)`, `(disparity,hdis,2)` and `(disparity,fdis,4)`.
+  Samples are Float16 or Float32 in the named depth/disparity representation.
 - `DPTH` stores exactly the logical row bytes. Capture-buffer padding is not
   part of the packed frame.
 - Packed sample bytes use the manifest byte order, exactly `little-endian` in
   v1.
 - Frames are encoded independently. `COMP` and the manifest compression policy
-  select `raw`, `lzfse`, or Zstandard level 1 (`zstd1`). V1 consumers MUST
-  implement all three values and accept each only when the signed manifest
-  policy permits it.
+  select `raw`, `lzfse`, or Zstandard level 1 (`zstd1`). A decoder reports
+  unsupported codecs to its caller.
 - After decoding, the byte count MUST equal both `ULEN` and the manifest
-  `uncompressedFrameByteCount`. Depth samples are not quantized, synthesized,
-  interpolated, or duplicated to match RGB cadence.
+  `uncompressedFrameByteCount` before the consumer uses the decoded layout.
+
+## Display coordinates
+
+`transform` applies to RGB presentation and the matching depth display grid.
+For a source grid with top-left-origin integer coordinates `(x, y)`, width `w`,
+and height `h`, the v1 mapping is:
+
+| Transform | Display orientation | Output size | Source to display coordinate |
+| --- | --- | --- | --- |
+| absent, `identity`, or `rotation:0` | up | `w × h` | `(x, y)` |
+| `rotation:0;mirrored` | up mirrored | `w × h` | `(w - 1 - x, y)` |
+| `rotation:90` | right | `h × w` | `(h - 1 - y, x)` |
+| `rotation:90;mirrored` | right mirrored | `h × w` | `(h - 1 - y, w - 1 - x)` |
+| `rotation:180` | down | `w × h` | `(w - 1 - x, h - 1 - y)` |
+| `rotation:180;mirrored` | down mirrored | `w × h` | `(x, h - 1 - y)` |
+| `rotation:270` | left | `h × w` | `(y, w - 1 - x)` |
+| `rotation:270;mirrored` | left mirrored | `h × w` | `(y, x)` |
+
+The literal `not-mirrored` belongs to the separate spatial-registration
+`recordedTransform` / `descriptor.connectionTransform` facts below; it is not
+a v1 `rgbTrack.transform` form. Readers MUST split transforms on `;` and
+compare complete components. Unknown or malformed components fail the semantic
+display check rather than silently changing the signed orientation.
+
+Registered playback requires mapping
+`urn:tapnap:tapcam:video-depth-registration:avdepthdata-yuv-warp:v1` and a usable
+descriptor. Unsupported registration disables that overlay.
+
+The model means `AVDepthData` has already been lens-warped into the synchronized
+pre-connection RGB coordinate system. Apply the affine to depth pixel centres,
+then the connection rotation and optional horizontal mirror in encoded space,
+then the clean aperture. Only a fully validated `registered` descriptor enables
+registered 2D playback.
 
 ## Bounds and rejection
 
@@ -215,7 +242,7 @@ This format sets no capture-duration limit. Consumers may impose additional
 bounded-input limits, such as a maximum file size, box count, or sample count;
 those safety budgets do not change the v1 wire format.
 
-A KLV reader MUST fail closed for:
+A KLV decoder rejects the affected decode operation for:
 
 - more than 32 records or a complete KLV frame above its bound;
 - a truncated header, payload, or alignment region;
@@ -225,19 +252,4 @@ A KLV reader MUST fail closed for:
 - `TVER` other than `1`, a non-positive `PTS ` timescale, or an unsupported
   `COMP` value;
 - a `CALI` index outside the signed table;
-- a frame index, sample count, timestamp, track fact, or codec policy that does
-  not match the manifest; or
 - decoded bytes whose count differs from `ULEN` or the signed format.
-
-The producer and authenticated reader MUST preserve real missing intervals as
-signed manifest gaps. They MUST NOT fabricate KLV samples to conceal drops.
-
-## Verification order
-
-Apply the shared local and backend gates in
-[Capture Binding and Proof v1](../bindings/capture-binding-and-proof-v1.md).
-Untrusted KLV MUST NOT trigger an unbounded semantic scan before the local
-binding gate passes. A bounded semantic scan may then run while the backend is
-pending, but its result MUST remain untrusted and MUST NOT produce a final
-authenticated verdict until the backend gate also passes. It establishes
-container consistency, not App Attest authenticity or physical-world truth.

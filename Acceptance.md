@@ -284,15 +284,13 @@ and attended capture/playback recording; exclude private speech from retention.
    the selected primary container plus exactly one `paired-video.mov`. A failed
    complement may produce a valid still artifact, but never a partial artifact
    labeled/exported as Live Photo; it does not pass the Live Photo case.
-3. Inventory and hash the exact originals before cleanup. No decoded frame,
-   preview, adjusted Photos resource, or transcoded share output may replace
-   them. Inspect manifest audio and primary-depth facts for truthfulness.
-4. Let the private queue sign the complete pair. One capture assertion binds
-   the exact canonical payload and resources without rewriting them. The final
-   local gate validates the same signed primary/MOV pair before Photos commit.
-5. Load original Photos `.photo` and `.pairedVideo` resources and reproduce
-   their complete binding. Verification export must preserve bytes identical
-   to readback; unsigned routing metadata contributes no trust.
+3. Inventory and hash the exact originals before cleanup, following the
+   [binding contract](bindings/capture-binding-and-proof-v1.md). Inspect
+   audio/depth descriptions separately for the capture behavior being exercised.
+4. Let the queue sign the complete pair and observe the final local check before
+   Photos commit.
+5. Read original Photos `.photo` and `.pairedVideo`, repeat that check, and
+   compare pre-export/readback/verification-export SHA-256 values.
 6. Open the item in TAP Library, page away/back, then press and hold. The correct
    native Live Photo plays without blank substitution/crash and returns to the
    still presentation on release. Repeat after an iCloud download. Pinch and
@@ -310,8 +308,9 @@ and attended capture/playback recording; exclude private speech from retention.
 Retain the settings matrix, resource inventory, event timeline, redacted proof
 summary, exact pre-export/readback SHA-256 comparison, audio results, and human
 motion/playback verdict. Lost/substituted resources, partial Live Photo export,
-false audio/depth claims, skipped final validation, changed readback, or broken
-native playback are Fail. Missing real device/credential, exact-resource access,
+skipped final byte-binding validation, or changed readback are integrity failures.
+Record audio/depth interpretation and native playback failures separately.
+Missing real device/credential, exact-resource access,
 or controlled audio state is Blocked. Production credential trust is checked
 separately below.
 
@@ -319,8 +318,8 @@ separately below.
 
 ## TAP Video
 
-Use real RGB and optional audio, observable finalized MP4 tracks, truthful
-manifest/depth counters, and exact original-resource readback. Prepare sufficient
+Use recorded RGB and optional audio with exact original-resource readback.
+Track facts and counters describe available observations. Prepare sufficient
 storage/power and record initial thermal state. Disable Low Power Mode for
 comparable performance runs. Run audio Off and On independently; On requires
 both OS permission and app data use. AirPlay, Picture in Picture, background
@@ -341,42 +340,29 @@ Include a fixed camera/static scene, a moving foreground subject, gentle camera
 rotation, translation/parallax, and a scene with local depth holes and a true
 depth gap. Confirm RGB colors stay on corresponding geometry and current frames
 apply their calibration and mirror transform without blending across changes.
-During a gap or failed 3D update, the same item's last valid point cloud remains
-visible without blank flashes or a no-data banner, and the next usable frame
-replaces it. Pause/seek should settle on the intended usable frame. Switching
-media must clear the prior item's cloud, including when the new item has no
-depth or has not produced its first usable frame. Gap/zero-depth cases keep RAW
-available; the held display must not invent stored samples or change source
-timestamps. Compare
-flicker, edge trails, latency, drops and bounded memory; Core Motion telemetry alone cannot compensate
-for translation or independently moving subjects. State device observations
-and regressions, rather than claiming improvement from the switch alone.
+Exercise a depth gap, failed update, pause/seek and a media switch, including
+an item with no depth or no first usable frame. Check the frame-retention and
+reset behavior in [ProductContract §5.2](ProductContract.md#52-current-viewer).
+Compare flicker, edge trails, latency, drops and bounded memory. Record device
+observations and regressions; Core Motion alone does not establish translation
+or independently moving subjects.
 Compare ordinary dual-camera and PRO LiDAR clips for peripheral geometry
 folding. Confirm the first one-finger drag rotates without a zoom jump and that
 frame updates preserve the user's viewing transform, as in photo 3D.
 For spatial history, record a short static scene while moving the camera, enter
 3D at the beginning and play through at least three seconds. Rotate/pan the view
 to revisit the first second's observed region without moving the playhead.
-Confirm that history stays spatially aligned and retains its original RGB,
-brightness and clear point shape as playback advances; current points stay centered.
-With the camera fixed and a changing subject, default playback shows only the
-latest frame. Move the camera and then stop: historical points should settle
-out of default view and remain available through deliberate view gestures.
-During a depth gap, the last displayed frame holds. With usable current RGB-D
-but unsuccessful alignment, the current frame keeps updating without spatial
-history. Then seek and change media to confirm the previous processing context
-cannot reappear. The preview
-uses selected bounded keyframes, not every past frame or a complete scene map.
+Compare spatial history against §5.2, including original RGB/brightness,
+stationary camera with a changing subject, movement followed by stopping,
+manual exploration, depth gaps and failed alignment. Seek and change media to
+check that the previous processing context cannot reappear.
 
-Exercise unsupported/error/no-sample motion states and the retained-sample cap.
-Read the signed telemetry back from pending and exported Photos-original bytes,
-check timestamp order/duration, quaternion layout, filtering counts and bounded
-availability states, then verify that mutations fail binding and malformed
-recognized telemetry fails locally before a server request. Existing artifacts
-without telemetry remain readable with unknown provenance. Repeat lifecycle
-stop/background, repeated recordings and signing/export/retry checks. Browser
-fixtures and automated parser tests do not establish sensor-clock accuracy,
-visual improvement or real-device acceptance.
+Exercise unsupported/error/no-sample motion states and the retained-sample cap;
+read telemetry from pending and exported originals. Use artifacts with irregular
+or unsupported content to check byte-only verification, and mutate covered bytes
+to confirm rejection. Exercise decoder limits in decoder tests. Repeat lifecycle
+stop/background, recordings and signing/export/retry. Parser fixtures alone do
+not establish sensor-clock accuracy or real-device behavior.
 
 Declare device/iOS coverage, repetitions, CPU/RSS/dirty-memory/disk/thermal/drop
 budgets, codec p50/p95 budgets, registration tolerance, and the method for proving
@@ -409,8 +395,8 @@ readiness. First-recording starvation, zero-duration RGB, black/frozen preview,
 false recording state, or a missing prepared graph is Fail.
 
 1. Inspect representative original MP4s, manifest/proof, RGB/audio/KLV tracks,
-   coverage and drop counters. Recorded audio must agree with both settings and
-   actual tracks; neither audio nor depth may be invented.
+   coverage and drop counters for the selected capture/playback behavior.
+   Signing preserves those recorded bytes without normalizing their properties.
 2. Confirm signed/exported/readback bytes bind correctly and the Library poster,
    foreground RAW playback, and registered 2D follow available facts.
 3. Trigger writer failure. Recording UI exits promptly; the failed workspace
@@ -422,7 +408,7 @@ false recording state, or a missing prepared graph is Fail.
    create a terminal capture or block export. Depth health is not integrity.
 5. Record 15, 60 and 180 seconds at least three times per duration. Capture RSS,
    dirty memory, disk bytes, RGB/depth/audio drops, compression ratio, encode
-   p50/p95 and thermal state. Gaps/drops remain visible in the manifest, memory
+   p50/p95 and thermal state. Recorded gaps/drops remain in the manifest, memory
    does not grow linearly with duration, and all declared budgets hold.
 6. On a real depth corpus, check exact-byte codec round trips and decode p50/p95.
    For a representative 180-second recording exercise RAW/2D, seek and dismiss
@@ -441,6 +427,8 @@ false recording state, or a missing prepared graph is Fail.
 Retain cycle tables, complete zero-depth state transitions, representative MP4
 and readback audits, raw duration/codec/resource measurements, trace/memgraph,
 registration results, real iCloud-only proof, and attended lifecycle recordings.
+Keep byte-integrity outcomes separate from playback, geometry, and data-quality
+outcomes; a failure of the latter must not suppress an otherwise valid signature.
 Apply the cold-path checks below to first-open/progress cases. Hidden media facts,
 zero-depth terminal state, lost/corrupt artifacts, stale progress, unbounded
 retention, or a failed declared budget is Fail. Missing real iCloud state,

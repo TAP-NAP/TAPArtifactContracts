@@ -1,16 +1,13 @@
 # Still Photo Manifest v1
 
-This document defines the JSON manifest produced for one TAP Still Photo. The
-manifest instance remains embedded in the captured HEIC or JPEG; this repository
-does not store capture instances.
-
-The accepted synthetic shape example is
-[`examples/manifests/still-photo-v1.json`](../examples/manifests/still-photo-v1.json).
-It is a manifest example, not a signed-media or canonical-byte golden vector.
+This document defines the producer's manifest fields, embedded in one HEIC/JPEG.
+[Photo Containers](../containers/photo-containers-v1.md) defines their placement;
+[Capture Binding and Proof](../bindings/capture-binding-and-proof-v1.md) defines
+hashing and verification. See the [synthetic example](../examples/manifests/still-photo-v1.json).
 
 ## Family identity
 
-The following values identify this family and MUST match exactly.
+Producers write the following family and encoding values.
 
 | Field | Required JSON value |
 | --- | --- |
@@ -20,45 +17,33 @@ The following values identify this family and MUST match exactly.
 | `schema.xmpNamespaceURI` | `urn:tapnap:tapcam:depth:1.0` |
 | `schema.xmpPrefix` | `tapdepth` |
 | `schema.xmpManifestPath` | `tapdepth:Manifest` |
-| Canonical payload media type | `application/vnd.tapnap.still-photo-manifest.payload+json;version=1` |
-
-A verifier MUST route on the complete `schema.id`, MUST check every other
-`schema` member above, and MUST NOT treat the Live Photo or TAP Video v1 family
-as this family.
-
 ## JSON and presence rules
 
-The top-level object has exactly the v1 members below. Every
-required object member participates in the canonical `payload` hash even when a
-member is only descriptive.
+Producers write these top-level members:
 
 | Field | JSON type | Presence and meaning |
 | --- | --- | --- |
 | `schema` | object | Required; exact family object above. |
 | `payload` | object | Required; capture facts defined below. |
-| `proofs` | array | Required and MUST be the empty array `[]`. Capture proof data is stored in the fixed proof slot, not here. |
+| `proofs` | array | Producer writes `[]`. |
 
 `payload.location` is the sole v1 nullable payload member whose key is
 always emitted: it is either a `Location` object or JSON `null`. Other fields
 marked optional are omitted when unavailable; the producer does not emit them
 as `null`. `payload.livePhoto` MUST be omitted for this family.
 
-All JSON numbers MUST be finite. `integer` means a JSON number with no fractional
-part; `resolvedSettingsUniqueID` is a signed 64-bit value and consumers must not
-coerce it through a representation that loses integer precision. Pixel counts
-and dimensions are in pixels unless a row states another unit. A verifier MUST
-validate every emitted payload member, including descriptive values and array
-order, and hash the exact raw payload bytes as defined by
+`integer` describes a JSON number with no fractional part;
+`resolvedSettingsUniqueID` is a signed 64-bit value. Consumers preserve its
+written bytes without coercing it through a lossy number representation. Pixel
+counts and dimensions are in pixels unless stated otherwise. Encoding uses
 [TAP capture canonical JSON](../bindings/capture-binding-and-proof-v1.md#tap-capture-canonical-json).
-Descriptive camera, software, time, and location fields are signed claims made
-by the producer; they are not independent proof that a real-world fact is true.
 
 ## Payload root
 
 | Field | JSON type | Presence | Meaning, unit, vocabulary |
 | --- | --- | --- | --- |
 | `payload.id` | string | Required | Capture ID; consumers treat it as opaque and compare it byte-for-byte with content-binding and signing IDs. |
-| `payload.capturedAt` | string | Required | UTC ISO 8601 internet date-time with fractional seconds. It must equal the binding/proof timestamp. |
+| `payload.capturedAt` | string | Required | UTC ISO 8601 internet date-time with fractional seconds. It equals `contentDigest.capturedAt`; the excluded outer proof timestamp is only a producer copy. |
 | `payload.sessionMode` | string enum | Required | V1 value `singleCam`. |
 | `payload.pairingMode` | string enum | Required | `rgbOnly`, `rgbWithApplePairedDepth`, `requiresMultiCam`, or `unsupported`; a normal executable photo-depth plan emits `rgbWithApplePairedDepth`. |
 | `payload.alignmentStatus` | string enum | Required | `sameCapturePipeline` or `notCaptured`. |
@@ -101,11 +86,11 @@ values below. They are descriptive labels, not executable API instructions.
 | Field | JSON type | Presence | Meaning or vocabulary |
 | --- | --- | --- | --- |
 | `resolvedSettingsUniqueID` | integer | Required | Signed 64-bit AVFoundation resolved-settings identifier; no physical unit. |
-| `requestedCodec` | string enum | Required | AVFoundation codec raw value: `hvc1` for the reviewed HEIC profile or `jpeg` for the reviewed JPEG profile. It must match the actual container. |
+| `requestedCodec` | string enum | Required | Requested AVFoundation codec: `hvc1` for HEIC or `jpeg` for JPEG; descriptive, not container-detection evidence. |
 | `depthDataDeliveryEnabled` | boolean | Required | V1 producer value `true`. |
 | `embedsDepthDataInPhoto` | boolean | Required | V1 producer value `true`; per-shot depth may still be unavailable. |
 | `depthDataFiltered` | boolean | Required | V1 producer value `true`. |
-| `depthAvailability` | string enum | Required | `available` or `unavailable`; must equal `payload.depth.availability`. |
+| `depthAvailability` | string enum | Required | Producer observation: `available` or `unavailable`. |
 | `photoQualityPrioritization` | string enum | Required | `speed`, `balanced`, or `quality`; the v1 producer value is `quality`. This is AVFoundation prioritization, not a size, resolution, or compression guarantee. |
 
 ### `RGBSource`
@@ -260,7 +245,7 @@ Each `CameraFormat` contains required string `mediaSubType` (printable FourCC or
 
 | Field | JSON type | Presence | Meaning, unit, vocabulary |
 | --- | --- | --- | --- |
-| `availability` | string enum | Required | `available` or `unavailable`; must equal `capture.depthAvailability`. |
+| `availability` | string enum | Required | Producer observation: `available` or `unavailable`. |
 | `auxiliaryDataKind` | string enum | Required | `depth`, `disparity`, or `none`. |
 | `depthDataType` | string | Required | AVDepthData FourCC as four printable ASCII characters or `0x` plus eight uppercase hexadecimal digits; `none` when unavailable. |
 | `metricUnit` | string enum | Required | `meters` for native depth, `convertDisparityToDepthMeters` for disparity, or `none` when unavailable. |
@@ -328,23 +313,3 @@ Required string members are `appName`, `bundleIdentifier`, `version`, and
 `build`. They are copied from the producing app bundle, with producer fallback
 strings where bundle metadata is unavailable. They are descriptive and may be
 sensitive in non-production builds.
-
-## Examples and expected decision
-
-The accepted shape and rejected non-empty-proof example are indexed with their
-expected decisions in [`examples/README.md`](../examples/README.md).
-
-## Required consistency checks
-
-A conforming Still Photo verifier MUST, before treating the manifest as bound:
-
-1. require the exact Still Photo family object and omitted `payload.livePhoto`;
-2. require `proofs: []`;
-3. parse the manifest from the XMP location in
-   [photo-containers-v1.md](../containers/photo-containers-v1.md);
-4. require `capture.depthAvailability == depth.availability` and compare actual
-   auxiliary depth/disparity presence with that value;
-5. extract, validate, and hash the exact raw `payload` value under
-   [capture-binding-and-proof-v1.md](../bindings/capture-binding-and-proof-v1.md);
-6. require the content-binding family
-   `urn:tapnap:tapcam:still-photo-content-binding:v1`.
