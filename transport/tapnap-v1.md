@@ -1,6 +1,6 @@
 # `.tapnap` Verification Transport v1
 
-Status: current pre-release v1 transport contract for Still Photo, Live Photo, and TAP Video
+Status: v1 transport contract adopted for the 1.0 baseline: Still Photo, Live Photo, and TAP Video
 Routing sidecar family: `urn:tapnap:tapcam:verification-export:v1`
 
 `.tapnap` is a byte-preserving transport wrapper. It carries original media to
@@ -13,7 +13,7 @@ A TAP Video package carries one complete original signed MP4, including its
 manifest, proof slot, RGB/audio tracks and any depth or telemetry. Producers
 MUST NOT extract a second manifest, proof or depth file. Raw MP4 sharing remains
 supported. Video support belongs to the current
-[pre-release v1 definition](../VERSIONING.md#current-pre-release-policy), not
+[v1 definition adopted for 1.0](../VERSIONING.md#changes-adopted-for-the-10-baseline), not
 necessarily earlier producer or verifier revisions.
 
 ## Transport identity

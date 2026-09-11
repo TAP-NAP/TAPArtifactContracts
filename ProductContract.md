@@ -39,13 +39,14 @@ Xcode target settings express the repository build boundary; availability of
 an iOS app on Mac or Apple Vision Pro is also controlled by App Store Connect
 and is not proven by repository settings alone.
 
-### 1.2 Pre-release version and compatibility policy
+### 1.2 Release baseline and compatibility policy
 
-The current App marketing/build version remains `0.2 (2)`. Before the first
-public release, every distinct current public-format and security-schema family
-starts at its own unambiguous `v1`; a shared numeric version does not make
-structurally different still-photo, Live Photo, TAP Video, content-binding,
-registration, proof, or attestation objects interchangeable. The named shared
+The App marketing version is `1.0`; its build number is maintained in the App
+project. The `v1.0` Git tag identifies the stable source baseline. Every distinct
+current public-format and security-schema family retains its own unambiguous
+`v1`; a shared numeric version does not make structurally different still-photo,
+Live Photo, TAP Video, content-binding, registration, proof, or attestation
+objects interchangeable. The named shared
 contracts own the exact identifiers and fail-closed routing rules.
 
 The documentation-only
@@ -57,12 +58,13 @@ The operational requirements below follow that authority and must not silently
 redefine the shared artifact contract.
 
 Superseded development-format identifiers are unsupported and must not remain
-as compatibility readers in TAPCam or TAPCamVerifier. Pre-release local app
-data is also disposable: a developer moving between incompatible builds clears
-the app container or deletes and reinstalls instead of relying on preference,
-database, queue-record, cache, or setup-marker migration. This policy does not
-weaken validation of current data and does not define the eventual compatibility
-policy for data or artifacts created by a public release.
+as compatibility readers in TAPCam or TAPCamVerifier. Local app data from
+development builds before 1.0 is disposable: a developer moving between those
+incompatible builds clears the app container or deletes and reinstalls instead
+of relying on preference, database, queue-record, cache, or setup-marker
+migration. This policy does not
+weaken validation of current data or permit discarding data and artifacts from
+the 1.0 baseline.
 
 TAPCamVerifier accepts a capture package only through the `.tapnap` extension or
 the registered TAPNAP MIME and requires its current v1 root sidecar. Legacy

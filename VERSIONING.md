@@ -49,11 +49,12 @@ An editorial clarification changes neither producer bytes nor consumer decisions
 An implementation mismatch does not redefine the contract; a shared behavior
 change requires owner approval and a reviewed revision.
 
-## Current pre-release policy
+## Changes adopted for the 1.0 baseline
 
-The following owner-approved changes are adopted before the first public release
-without advancing version numbers. Producers and consumers adopt the reviewed
-contract commit together:
+The following owner-approved changes were adopted while preparing 1.0 without
+advancing wire-format versions. The `v1.0` Git tag records the stable source
+baseline; it does not rename any format family. Producers and consumers adopt
+the reviewed contract commit together:
 
 - [`.tapnap` v1](transport/tapnap-v1.md) includes Still/Live Photo and TAP Video
   packages. Safe paths and unambiguous recognized resource roles are required;
